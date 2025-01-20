@@ -3,7 +3,7 @@ package laboratorios
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGLab/dto/models/administrativo"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
 	"log"
