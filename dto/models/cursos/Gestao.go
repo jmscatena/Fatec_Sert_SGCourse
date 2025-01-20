@@ -21,9 +21,6 @@ type Gestao struct {
 }
 
 func (p *Gestao) Validate() error {
-	if p.Disciplina == nil {
-		return errors.New("obrigatório: disciplina")
-	}
 	if p.TipoArquivo == "" || p.TipoArquivo == "null" {
 		return errors.New("obrigatório: tipo de arquivo")
 	}
