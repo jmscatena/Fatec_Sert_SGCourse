@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/cursos"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/middleware"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/services"
