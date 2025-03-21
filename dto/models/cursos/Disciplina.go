@@ -3,6 +3,7 @@ package cursos
 import (
 	"errors"
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
 	"strings"
@@ -11,11 +12,12 @@ import (
 
 type Disciplina struct {
 	gorm.Model
-	UID      uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Nome     string    `gorm:"size:255;not null;unique" json:"nome"`
-	Semestre int       `gorm:"default:-1" json:"semestre"`
-	Ativo    bool      `gorm:"default:True;" json:"ativo"`
-	Curso    Curso     `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	UID       uuid.UUID              `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
+	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
+	Curso     Curso                  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Semestre  int                    `gorm:"default:-1" json:"semestre"`
+	Professor administrativo.Usuario `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Ativo     bool                   `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Disciplina) Validate() error {

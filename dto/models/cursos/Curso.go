@@ -3,9 +3,15 @@ package cursos
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
-	"time"
+)
+
+type Periodo string
+
+const (
+	matutino   Periodo = "matutino"
+	vespertino Periodo = "vespertino"
+	noturno    Periodo = "noturno"
 )
 
 type Curso struct {
@@ -13,7 +19,7 @@ type Curso struct {
 	gorm.Model
 	UID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Nome    string    `gorm:"size:255;not null;unique" json:"nome"`
-	Periodo string    `gorm:"size:255;not null;unique" json:"periodo"`
+	Periodo Periodo   `json:"periodo" validate:"required"`
 	Ativo   bool      `gorm:"default:True;" json:"ativo"`
 }
 

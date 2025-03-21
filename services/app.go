@@ -9,7 +9,7 @@ import (
 
 func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connection) (uuid.UUID, error) {
 	/* metodo com devolucao do UUID */
-	//db, err := infra.InitDB()
+	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
 		return uuid.Nil, nil // corrigir esse retorno
@@ -23,7 +23,7 @@ func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connect
 }
 
 func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) (*T, error) {
-	//db, err := infra.InitDB()
+	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
 		return nil, nil
@@ -38,7 +38,7 @@ func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, 
 }
 
 func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) (int64, error) {
-	//db, err := infra.InitDB()
+	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return -1, nil
 	}
@@ -66,7 +66,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, con
 */
 
 func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connection) (*[]T, error) {
-	//db, err := infra.InitDB()
+	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil
 	}
@@ -79,7 +79,7 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Conn
 	return rec, nil
 }
 func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string, conn infra.Connection) (*T, error) {
-	//db, err := infra.InitDB()
+	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil
 	}

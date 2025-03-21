@@ -11,15 +11,22 @@ import (
 	"time"
 )
 
+type Perfil string
+
+const (
+	professor   Perfil = "professor"
+	coordenador Perfil = "coordenador"
+	funcionario Perfil = "funcionario"
+)
+
 type Usuario struct {
 	gorm.Model
-	UID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
-	Nome      string    `gorm:"size:255;not null;unique" json:"nome"`
-	Email     string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha     string    `gorm:"size:100;not null;" json:"-"`
-	Ativo     bool      `gorm:"default:True;" json:"ativo"`
-	Professor bool      `gorm:"default:False;"`
-	Gestor    bool      `gorm:"default:False;"`
+	UID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
+	Nome   string    `gorm:"size:255;not null;unique" json:"nome"`
+	Email  string    `gorm:"size:100;not null,email;" json:"email"`
+	Senha  string    `gorm:"size:100;not null;" json:"-"`
+	Ativo  bool      `gorm:"default:True;" json:"ativo"`
+	Perfil Perfil    `json:"perfil" validate:"required"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uuid.UUID, error) {
@@ -41,11 +48,10 @@ func (u *Usuario) Update(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
 	}
 	u.Prepare()
 	db = db.Model(Usuario{}).Where("id = ?", uid).Updates(Usuario{
-		Senha:     u.Senha,
-		Nome:      u.Nome,
-		Email:     u.Email,
-		Professor: u.Professor,
-		Gestor:    u.Gestor,
+		Senha:  u.Senha,
+		Nome:   u.Nome,
+		Email:  u.Email,
+		Perfil: u.Perfil,
 	})
 
 	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&Usuario{}).UpdateColumns(
