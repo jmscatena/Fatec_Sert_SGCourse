@@ -2,12 +2,12 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/handlers"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
 	"log"
 )
 
-func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connection) (uuid.UUID, error) {
+func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (uuid.UUID, error) {
 	/* metodo com devolucao do UUID */
 	//db, err := config.InitDB()
 	if conn.Db == nil {
@@ -22,7 +22,7 @@ func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connect
 	return recid, nil
 }
 
-func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) (*T, error) {
+func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
@@ -37,7 +37,7 @@ func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, 
 	return rec, nil
 }
 
-func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) (int64, error) {
+func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) (int64, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return -1, nil
@@ -65,7 +65,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, con
 }
 */
 
-func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Connection) (*[]T, error) {
+func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (*[]T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil
@@ -78,7 +78,7 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn infra.Conn
 	}
 	return rec, nil
 }
-func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string, conn infra.Connection) (*T, error) {
+func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil

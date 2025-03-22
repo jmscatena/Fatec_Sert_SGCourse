@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/handlers"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/services"
 	"net/http"
 	"reflect"
@@ -16,7 +16,7 @@ func Index(c *gin.Context) {
 
 }
 
-func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn infra.Connection) {
+func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -33,7 +33,7 @@ func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], co
 	}
 }
 
-func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) {
+func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -54,7 +54,7 @@ func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T],
 	}
 }
 
-func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn infra.Connection) {
+func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
 		code, cerr := services.Del(handler, uid, conn)
@@ -84,7 +84,7 @@ func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], 
 		}
 	}
 */
-func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn infra.Connection) {
+func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
 		rec, cerr := services.GetAll(handler, conn)
@@ -96,7 +96,7 @@ func GetAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T],
 	}
 }
 
-func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, values string, conn infra.Connection) {
+func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param string, values string, conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if len(values) == 0 {
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
