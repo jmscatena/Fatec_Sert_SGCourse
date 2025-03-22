@@ -14,9 +14,9 @@ type Disciplina struct {
 	gorm.Model
 	UID       uuid.UUID              `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
-	Curso     Curso                  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`
-	Professor administrativo.Usuario `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Professor administrativo.Usuario `gorm:"foreignkey:UsuarioID;references:ID, constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"professor"`
 	Ativo     bool                   `gorm:"default:True;" json:"ativo"`
 }
 

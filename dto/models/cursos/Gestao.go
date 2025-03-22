@@ -13,7 +13,7 @@ import (
 type Gestao struct {
 	gorm.Model
 	UID         uuid.UUID  `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Disciplina  Disciplina `gorm:"foreignkey:DisciplinaID" json:"disciplina"`
+	Disciplina  Disciplina `gorm:"foreignkey:DisciplinaID,references:ID" json:"disciplina"`
 	TipoArquivo string     `gorm:"type:text" json:"tipoarquivo"`
 	Arquivo     string     `gorm:"type:text" json:"arquivo"`
 	CreatedAt   time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
