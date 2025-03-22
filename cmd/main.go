@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/routes"
 	"github.com/joho/godotenv"
 	"log"
@@ -15,7 +15,7 @@ func main() {
 		log.Fatalf("Error Loading Configuration File")
 	}
 	gin.SetMode(os.Getenv("SET_MODE"))
-	dbConn := infra.Connection{Db: nil, NoSql: nil}
+	dbConn := config.Connection{Db: nil, NoSql: nil}
 	_, err = dbConn.InitDB()
 	if err != nil {
 		log.Fatalf("Error Loading Database Connection")
@@ -24,9 +24,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error Loading Redis Connection")
 	}
-	token := (&infra.SecretsToken{}).GenerateSecret()
+	token := (&config.SecretsToken{}).GenerateSecret()
 
-	server := infra.Server{}
+	server := config.Server{}
 	server.NewServer("8000")
 	router := routes.ConfigRoutes(server.Server, dbConn, *token)
 	log.Fatal(router.Run(":" + server.Port))

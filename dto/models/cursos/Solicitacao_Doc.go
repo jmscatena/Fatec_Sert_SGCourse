@@ -11,8 +11,8 @@ type Solicitacao_Doc struct {
 	// Esta faltando os materiais
 	gorm.Model
 	UID        uuid.UUID  `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Documento  Documento  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"documento"`
-	Disciplina Disciplina `gorm:"foreignkey:DisciplinaID constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"disciplina"`
+	Documento  Documento  `gorm:"foreignkey:DocumentoID,references:ID,constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"documento"`
+	Disciplina Disciplina `gorm:"foreignkey:DisciplinaID,references:ID,constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"disciplina"`
 	Entrega    bool       `gorm:"size:255;not null;unique" json:"entrega"`
 	Prazo      time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"prazo"`
 	Ativo      bool       `gorm:"default:True;" json:"ativo"`

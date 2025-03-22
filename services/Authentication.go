@@ -5,8 +5,8 @@ import (
 	"fmt"
 	gin "github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
 	"net/http"
 	"strings"
 )
@@ -49,7 +49,7 @@ var validate = validator.New()
 		}
 	}
 */
-func Signup(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
+func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		var user administrativo.Usuario
@@ -84,13 +84,13 @@ func Signup(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		token, err := infra.CreateToken(user, 1440, token.GetAccess())
+		token, err := config.CreateToken(user, 1440, token.GetAccess())
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
-		err = infra.StoreToken(token, userID.String(), 1440, conn)
+		err = config.StoreToken(token, userID.String(), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Could Not Signup."})
 			c.Abort()
@@ -104,7 +104,7 @@ func Signup(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 	}
 
 }
-func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
+func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user administrativo.Usuario
 		json_map := make(map[string]interface{})
@@ -134,15 +134,15 @@ func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 			return
 		}
 		//Create access token
-		accesstoken, err := infra.CreateToken(*foundUser, 1440, token.GetAccess())
-		err = infra.StoreToken(accesstoken, foundUser.UID.String(), 1440, conn)
+		accesstoken, err := config.CreateToken(*foundUser, 1440, token.GetAccess())
+		err = config.StoreToken(accesstoken, foundUser.UID.String(), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		//Create refresh token
-		refreshtoken, err := infra.CreateToken(*foundUser, 180, token.GetRefresh())
-		err = infra.StoreToken(foundUser.UID.String(), refreshtoken, 180, conn)
+		refreshtoken, err := config.CreateToken(*foundUser, 180, token.GetRefresh())
+		err = config.StoreToken(foundUser.UID.String(), refreshtoken, 180, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -151,7 +151,7 @@ func Login(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
 
 	}
 }
-func Logout(conn infra.Connection) gin.HandlerFunc {
+func Logout(conn config.Connection) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		userID := c.Request.Header.Get("ID")
@@ -166,12 +166,12 @@ func Logout(conn infra.Connection) gin.HandlerFunc {
 		}
 		// Verify the JWT token
 		tokenString := tokenParts[1]
-		infra.RevokeToken(tokenString, conn)
-		infra.RevokeToken(userID, conn)
+		config.RevokeToken(tokenString, conn)
+		config.RevokeToken(userID, conn)
 		c.Redirect(http.StatusFound, "/login")
 	}
 }
-func Authenticate(conn infra.Connection, token infra.SecretsToken) gin.HandlerFunc {
+func Authenticate(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		userID := c.Request.Header.Get("ID")
@@ -190,7 +190,7 @@ func Authenticate(conn infra.Connection, token infra.SecretsToken) gin.HandlerFu
 		}
 		// Verify the JWT token
 		tokenString := tokenParts[1]
-		_, err := infra.VerifyToken(tokenString, token.GetRefresh())
+		_, err := config.VerifyToken(tokenString, token.GetRefresh())
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or Expired Access"})
 			c.Abort()
@@ -212,7 +212,7 @@ func Authenticate(conn infra.Connection, token infra.SecretsToken) gin.HandlerFu
 	}
 }
 
-func ValidateSession(conn infra.Connection, tokenString string, token infra.SecretsToken,
+func ValidateSession(conn config.Connection, tokenString string, token config.SecretsToken,
 	user administrativo.Usuario) (string, error) {
 
 	if conn.NoSql != nil {
@@ -227,16 +227,16 @@ func ValidateSession(conn infra.Connection, tokenString string, token infra.Secr
 		if err != nil || tokenAccess == "" {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		tk, err := infra.VerifyToken(tokenAccess, token.GetAccess())
+		tk, err := config.VerifyToken(tokenAccess, token.GetAccess())
 		if tk == nil {
-			infra.RevokeToken(user.UID.String(), conn)
+			config.RevokeToken(user.UID.String(), conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		refreshtk, err := infra.CreateToken(user, 10, token.GetRefresh())
+		refreshtk, err := config.CreateToken(user, 10, token.GetRefresh())
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		err = infra.StoreToken(refreshtk, user.UID.String(), 10, conn)
+		err = config.StoreToken(refreshtk, user.UID.String(), 10, conn)
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
@@ -244,8 +244,8 @@ func ValidateSession(conn infra.Connection, tokenString string, token infra.Secr
 	if userId == user.UID.String() {
 		tk, err := conn.NoSql.Get(user.UID.String()).Result()
 		if err != nil || tk == "" {
-			infra.RevokeToken(tokenString, conn)
-			infra.RevokeToken(tk, conn)
+			config.RevokeToken(tokenString, conn)
+			config.RevokeToken(tk, conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 	}

@@ -10,7 +10,7 @@ import (
 type Entrega_Doc struct {
 	gorm.Model
 	UID         uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Solicitacao Solicitacao_Doc `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"json:"Solicitacao"`
+	Solicitacao Solicitacao_Doc `gorm:"foreignKey:Solicitacao_DocID;references:ID,constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"json:"Solicitacao"`
 	Arquivo     string          `gorm:"type:text" json:"arquivo"`
 	CreatedAt   time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`

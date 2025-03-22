@@ -3,13 +3,13 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/infra"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/middleware"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/services"
 )
 
-func ConfigRoutes(router *gin.Engine, conn infra.Connection, token infra.SecretsToken) *gin.Engine {
+func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.SecretsToken) *gin.Engine {
 	main := router.Group("/")
 	{
 		login := main.Group("login")

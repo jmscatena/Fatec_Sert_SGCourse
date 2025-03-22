@@ -19,7 +19,7 @@ type Documento struct {
 	gorm.Model
 	UID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Titulo    string    `gorm:"size:255;not null;unique" json:"titulo"`
-	Tipo      Tipo      `json:"tipo" validate:"required"`
+	Tipo      Tipo      `gorm:"foreignKey:TipoID;references:ID" json:"tipo" validate:"required"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	Ativo     bool      `gorm:"default:True;" json:"ativo"`
