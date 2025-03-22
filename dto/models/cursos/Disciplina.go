@@ -18,7 +18,7 @@ type Disciplina struct {
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
 	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`
-	Professor administrativo.Usuario `gorm:"foreignkey:UsuarioID;references:ID, constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"professor"`
+	Usuario   administrativo.Usuario `gorm:"foreignkey:UsuarioID;references:ID" json:"professor"`
 	Ativo     bool                   `gorm:"default:True;" json:"ativo"`
 }
 
