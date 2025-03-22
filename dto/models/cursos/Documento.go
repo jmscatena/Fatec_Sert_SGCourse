@@ -17,6 +17,7 @@ const (
 
 type Documento struct {
 	gorm.Model
+	TipoID    uint
 	UID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Titulo    string    `gorm:"size:255;not null;unique" json:"titulo"`
 	Tipo      Tipo      `gorm:"foreignKey:TipoID;references:ID" json:"tipo" validate:"required"`
