@@ -8,7 +8,15 @@ import (
 )
 
 func RunMigrate(db *gorm.DB) {
-	err := db.AutoMigrate(&admin.Usuario{}, &curso.Curso{}, &curso.Disciplina{}, &curso.Gestao{})
+	err := db.AutoMigrate(
+		&admin.Usuario{},
+		&curso.Curso{},
+		&curso.Disciplina{},
+		&curso.Documento{},
+		&curso.Gestao{},
+		&curso.Solicitacao_Doc{},
+		&curso.Entrega_Doc{},
+	)
 	if err != nil {
 		fmt.Println("Migrating database erro:", err)
 		return
