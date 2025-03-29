@@ -2,7 +2,6 @@ package administrativo
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -22,7 +21,7 @@ const (
 type Usuario struct {
 	gorm.Model
 	PerfilID uint64
-	UID      uint64 `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	ID       uint64 `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome     string `gorm:"size:255;not null;unique" json:"nome"`
 	Email    string `gorm:"size:100;not null,email;" json:"email"`
 	Senha    string `gorm:"size:100;not null;" json:"-"`
@@ -30,19 +29,19 @@ type Usuario struct {
 	Perfil   Perfil `gorm:"foreignKey:PerfilID,references:ID" json:"perfil" validate:"required"`
 }
 
-func (u *Usuario) Create(db *gorm.DB) (uuid.UUID, error) {
+func (u *Usuario) Create(db *gorm.DB) (uint64, error) {
 	if verr := u.Validate("insert"); verr != nil {
-		return uuid.Nil, verr
+		return 0, verr
 	}
 	u.Prepare()
 	err := db.Debug().Omit("ID").Create(&u).Error
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return u.UID, nil
+	return u.ID, nil
 }
 
-func (u *Usuario) Update(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
+func (u *Usuario) Update(db *gorm.DB, uid uint64) (*Usuario, error) {
 
 	if verr := u.Validate("insert"); verr != nil {
 		return nil, verr
@@ -83,7 +82,7 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 }
 
 /*
-func (u *Usuario) Find(db *gorm.DB, uid uuid.UUID) (*Usuario, error) {
+func (u *Usuario) Find(db *gorm.DB, uid uint64) (*Usuario, error) {
 
 	err := db.Debug().Model(Usuario{}).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
@@ -107,7 +106,7 @@ func (u *Usuario) Find(db *gorm.DB, param string, uid string) (*Usuario, error) 
 	return u, nil
 }
 
-func (u *Usuario) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
+func (u *Usuario) Delete(db *gorm.DB, uid uint64) (int64, error) {
 	db = db.Debug().Where("id = ?", uid).Delete(&Usuario{})
 	if db.Error != nil {
 		return 0, db.Error
