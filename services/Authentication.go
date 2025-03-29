@@ -78,7 +78,7 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		}
 
 		userID, err := New[administrativo.Usuario](&user, conn)
-		user.UID = userID
+		user.ID = userID
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
 			c.Abort()
@@ -135,19 +135,19 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		}
 		//Create access token
 		accesstoken, err := config.CreateToken(*foundUser, 1440, token.GetAccess())
-		err = config.StoreToken(accesstoken, foundUser.UID.String(), 1440, conn)
+		err = config.StoreToken(accesstoken, foundUser.ID.String(), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		//Create refresh token
 		refreshtoken, err := config.CreateToken(*foundUser, 180, token.GetRefresh())
-		err = config.StoreToken(foundUser.UID.String(), refreshtoken, 180, conn)
+		err = config.StoreToken(foundUser.ID.String(), refreshtoken, 180, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"id": foundUser.UID, "data": refreshtoken})
+		c.JSON(http.StatusOK, gin.H{"id": foundUser.ID, "data": refreshtoken})
 
 	}
 }
@@ -196,14 +196,14 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 			c.Abort()
 			return
 		}
-		condition := "UID=?"
+		condition := "ID=?"
 		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), condition, userID, conn)
 		//		foundUser := (*foundUsers)[0]
 		token, err := ValidateSession(conn, tokenString, token, *foundUser)
 
 		// Store the user ID in the request context
-		//c.JSON(http.StatusOK, gin.H{"data": foundUser.UID, "token": token})
-		c.Set("id", foundUser.UID)
+		//c.JSON(http.StatusOK, gin.H{"data": foundUser.ID, "token": token})
+		c.Set("id", foundUser.ID)
 		c.Set("data", token)
 
 		// Proceed to the next handler
@@ -223,26 +223,26 @@ func ValidateSession(conn config.Connection, tokenString string, token config.Se
 		return "", fmt.Errorf("Error validate session: %w", err)
 	}
 	if userId == "" {
-		tokenAccess, err := conn.NoSql.Get(user.UID.String()).Result()
+		tokenAccess, err := conn.NoSql.Get(user.ID.String()).Result()
 		if err != nil || tokenAccess == "" {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 		tk, err := config.VerifyToken(tokenAccess, token.GetAccess())
 		if tk == nil {
-			config.RevokeToken(user.UID.String(), conn)
+			config.RevokeToken(user.ID.String(), conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 		refreshtk, err := config.CreateToken(user, 10, token.GetRefresh())
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		err = config.StoreToken(refreshtk, user.UID.String(), 10, conn)
+		err = config.StoreToken(refreshtk, user.ID.String(), 10, conn)
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 	}
-	if userId == user.UID.String() {
-		tk, err := conn.NoSql.Get(user.UID.String()).Result()
+	if userId == user.ID.String() {
+		tk, err := conn.NoSql.Get(user.ID.String()).Result()
 		if err != nil || tk == "" {
 			config.RevokeToken(tokenString, conn)
 			config.RevokeToken(tk, conn)

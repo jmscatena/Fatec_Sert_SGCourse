@@ -41,20 +41,20 @@ func (u *Usuario) Create(db *gorm.DB) (uint64, error) {
 	return u.ID, nil
 }
 
-func (u *Usuario) Update(db *gorm.DB, uid uint64) (*Usuario, error) {
+func (u *Usuario) Update(db *gorm.DB, ID uint64) (*Usuario, error) {
 
 	if verr := u.Validate("insert"); verr != nil {
 		return nil, verr
 	}
 	u.Prepare()
-	db = db.Model(Usuario{}).Where("id = ?", uid).Updates(Usuario{
+	db = db.Model(Usuario{}).Where("id = ?", ID).Updates(Usuario{
 		Senha:  u.Senha,
 		Nome:   u.Nome,
 		Email:  u.Email,
 		Perfil: u.Perfil,
 	})
 
-	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&Usuario{}).UpdateColumns(
+	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", ID).Take(&Usuario{}).UpdateColumns(
 		map[string]interface{}{
 			"Senha": u.Senha,
 			"Nome":  u.Nome,
@@ -65,7 +65,7 @@ func (u *Usuario) Update(db *gorm.DB, uid uint64) (*Usuario, error) {
 	if db.Error != nil {
 		return &Usuario{}, db.Error
 	}
-	err := db.Debug().Model(&Usuario{}).Where("id = ?", uid).Take(&u).Error
+	err := db.Debug().Model(&Usuario{}).Where("id = ?", ID).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
 	}
@@ -82,9 +82,9 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 }
 
 /*
-func (u *Usuario) Find(db *gorm.DB, uid uint64) (*Usuario, error) {
+func (u *Usuario) Find(db *gorm.DB, ID uint64) (*Usuario, error) {
 
-	err := db.Debug().Model(Usuario{}).Where("id = ?", uid).Take(&u).Error
+	err := db.Debug().Model(Usuario{}).Where("id = ?", ID).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
 	}
@@ -95,8 +95,8 @@ func (u *Usuario) Find(db *gorm.DB, uid uint64) (*Usuario, error) {
 }
 */
 
-func (u *Usuario) Find(db *gorm.DB, param string, uid string) (*Usuario, error) {
-	err := db.Debug().Model(Usuario{}).Where(param, uid).Take(&u).Error
+func (u *Usuario) Find(db *gorm.DB, param string, ID string) (*Usuario, error) {
+	err := db.Debug().Model(Usuario{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
 	}
@@ -106,16 +106,16 @@ func (u *Usuario) Find(db *gorm.DB, param string, uid string) (*Usuario, error) 
 	return u, nil
 }
 
-func (u *Usuario) Delete(db *gorm.DB, uid uint64) (int64, error) {
-	db = db.Debug().Where("id = ?", uid).Delete(&Usuario{})
+func (u *Usuario) Delete(db *gorm.DB, ID uint64) (int64, error) {
+	db = db.Debug().Where("id = ?", ID).Delete(&Usuario{})
 	if db.Error != nil {
 		return 0, db.Error
 	}
 	return db.RowsAffected, nil
 }
 
-func (u *Usuario) DeleteBy(db *gorm.DB, cond string, uid interface{}) (int64, error) {
-	result := db.Delete(&Usuario{}, cond+" = ?", uid)
+func (u *Usuario) DeleteBy(db *gorm.DB, cond string, ID interface{}) (int64, error) {
+	result := db.Delete(&Usuario{}, cond+" = ?", ID)
 	if result.Error != nil {
 		return 0, result.Error
 	}

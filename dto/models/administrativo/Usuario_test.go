@@ -17,7 +17,7 @@ func ShouldUsuarioCreateCorrect(t *testing.T) {
 func TestUsuario_Create_Correct(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uint64
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -65,7 +65,7 @@ func TestUsuario_Create_Correct(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
@@ -87,7 +87,7 @@ func TestUsuario_Create_Correct(t *testing.T) {
 func TestUsuario_Delete(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uint64
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -99,8 +99,8 @@ func TestUsuario_Delete(t *testing.T) {
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db   *gorm.DB
-		uUID uint64
+		db  *gorm.DB
+		uID uint64
 	}
 	tests := []struct {
 		name    string
@@ -115,14 +115,14 @@ func TestUsuario_Delete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Delete(tt.args.db, tt.args.uUID)
+			got, err := u.Delete(tt.args.db, tt.args.uID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -137,7 +137,7 @@ func TestUsuario_Delete(t *testing.T) {
 func TestUsuario_DeleteBy(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uint64
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -151,7 +151,7 @@ func TestUsuario_DeleteBy(t *testing.T) {
 	type args struct {
 		db   *gorm.DB
 		cond string
-		uUID uint64
+		uID  uint64
 	}
 	tests := []struct {
 		name    string
@@ -166,14 +166,14 @@ func TestUsuario_DeleteBy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.DeleteBy(tt.args.db, tt.args.cond, tt.args.uUID)
+			got, err := u.DeleteBy(tt.args.db, tt.args.cond, tt.args.uID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteBy() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -200,8 +200,8 @@ func TestUsuario_Find(t *testing.T) {
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db   *gorm.DB
-		uUID uint64
+		db  *gorm.DB
+		uID uint64
 	}
 	tests := []struct {
 		name    string
@@ -216,14 +216,14 @@ func TestUsuario_Find(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Find(tt.args.db, tt.args.uUID)
+			got, err := u.Find(tt.args.db, tt.args.uID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Find() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -252,7 +252,7 @@ func TestUsuario_FindBy(t *testing.T) {
 	type args struct {
 		db    *gorm.DB
 		param string
-		uUID  uint64
+		uID   uint64
 	}
 	tests := []struct {
 		name    string
@@ -267,14 +267,14 @@ func TestUsuario_FindBy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.uUID,
+				ID:     tt.fields.uID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.FindBy(tt.args.db, tt.args.param, tt.args.uUID...)
+			got, err := u.FindBy(tt.args.db, tt.args.param, tt.args.uID...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindBy() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -316,7 +316,7 @@ func TestUsuario_List(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
@@ -359,7 +359,7 @@ func TestUsuario_Prepare(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
@@ -374,7 +374,7 @@ func TestUsuario_Prepare(t *testing.T) {
 func TestUsuario_Update(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uint64
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -384,8 +384,8 @@ func TestUsuario_Update(t *testing.T) {
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db   *gorm.DB
-		uUID uint64
+		db  *gorm.DB
+		uID uint64
 	}
 	tests := []struct {
 		name    string
@@ -400,14 +400,14 @@ func TestUsuario_Update(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Update(tt.args.db, tt.args.uUID)
+			got, err := u.Update(tt.args.db, tt.args.uID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -419,10 +419,10 @@ func TestUsuario_Update(t *testing.T) {
 	}
 }
 
-func TestUsuario_ValUIDate(t *testing.T) {
+func TestUsuario_ValIDate(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uint64
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -448,15 +448,15 @@ func TestUsuario_ValUIDate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
 				Model:  tt.fields.Model,
-				UID:    tt.fields.UID,
+				ID:     tt.fields.ID,
 				Nome:   tt.fields.Nome,
 				Email:  tt.fields.Email,
 				Senha:  tt.fields.Senha,
 				Ativo:  tt.fields.Ativo,
 				Perfil: tt.fields.Perfil,
 			}
-			if err := u.ValUIDate(tt.args.action); (err != nil) != tt.wantErr {
-				t.Errorf("ValUIDate() error = %v, wantErr %v", err, tt.wantErr)
+			if err := u.ValIDate(tt.args.action); (err != nil) != tt.wantErr {
+				t.Errorf("ValIDate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
