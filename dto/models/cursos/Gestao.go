@@ -12,7 +12,7 @@ import (
 
 type Gestao struct {
 	gorm.Model
-	DisciplinaID uint
+	DisciplinaID string
 	UID          uuid.UUID  `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
 	Disciplina   Disciplina `gorm:"foreignkey:DisciplinaID,references:ID" json:"disciplina"`
 	TipoArquivo  string     `gorm:"type:text" json:"tipoarquivo"`

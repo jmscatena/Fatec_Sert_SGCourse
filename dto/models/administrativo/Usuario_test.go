@@ -1,6 +1,7 @@
 package administrativo
 
 import (
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,14 +18,13 @@ func ShouldUsuarioCreateCorrect(t *testing.T) {
 func TestUsuario_Create_Correct(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		UID       uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
-		Tecnico   bool
+		Perfil    Perfil
 		CreatedAt time.Time
 		UpdatedAt time.Time
 	}
@@ -53,7 +53,7 @@ func TestUsuario_Create_Correct(t *testing.T) {
 	}{
 		{
 			name:    "Teste de Usuário",
-			fields:  fields{Nome: "Teste", Email: "Teste@email.com", Senha: "1234", Professor: true},
+			fields:  fields{Nome: "Teste", Email: "Teste@email.com", Senha: "1234", Perfil: professor},
 			args:    args{db: con},
 			want:    0,
 			wantErr: false,
@@ -66,11 +66,11 @@ func TestUsuario_Create_Correct(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Professor: tt.fields.Professor,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Perfil: tt.fields.Perfil,
 			}
 			got, err := u.Create(tt.args.db)
 			if (err != nil) != tt.wantErr {
@@ -88,20 +88,20 @@ func TestUsuario_Create_Correct(t *testing.T) {
 func TestUsuario_Delete(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		UID       uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db  *gorm.DB
-		uid uint64
+		db   *gorm.DB
+		uUID uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -115,17 +115,15 @@ func TestUsuario_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Delete(tt.args.db, tt.args.uid)
+			got, err := u.Delete(tt.args.db, tt.args.uUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -140,13 +138,13 @@ func TestUsuario_Delete(t *testing.T) {
 func TestUsuario_DeleteBy(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		UID       uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
@@ -154,7 +152,7 @@ func TestUsuario_DeleteBy(t *testing.T) {
 	type args struct {
 		db   *gorm.DB
 		cond string
-		uid  interface{}
+		uUID uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -168,17 +166,15 @@ func TestUsuario_DeleteBy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.DeleteBy(tt.args.db, tt.args.cond, tt.args.uid)
+			got, err := u.DeleteBy(tt.args.db, tt.args.cond, tt.args.uUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("DeleteBy() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -193,20 +189,20 @@ func TestUsuario_DeleteBy(t *testing.T) {
 func TestUsuario_Find(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		ID        uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db  *gorm.DB
-		uid uint64
+		db   *gorm.DB
+		uUID uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -220,17 +216,15 @@ func TestUsuario_Find(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Find(tt.args.db, tt.args.uid)
+			got, err := u.Find(tt.args.db, tt.args.uUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Find() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -245,13 +239,13 @@ func TestUsuario_Find(t *testing.T) {
 func TestUsuario_FindBy(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		ID        uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
@@ -259,7 +253,7 @@ func TestUsuario_FindBy(t *testing.T) {
 	type args struct {
 		db    *gorm.DB
 		param string
-		uid   []interface{}
+		uUID  uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -273,17 +267,15 @@ func TestUsuario_FindBy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.uUID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.FindBy(tt.args.db, tt.args.param, tt.args.uid...)
+			got, err := u.FindBy(tt.args.db, tt.args.param, tt.args.uUID...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FindBy() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -298,13 +290,13 @@ func TestUsuario_FindBy(t *testing.T) {
 func TestUsuario_List(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		ID        uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
@@ -324,15 +316,13 @@ func TestUsuario_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
 			got, err := u.List(tt.args.db)
 			if (err != nil) != tt.wantErr {
@@ -349,13 +339,13 @@ func TestUsuario_List(t *testing.T) {
 func TestUsuario_Prepare(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		ID        uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
@@ -369,15 +359,13 @@ func TestUsuario_Prepare(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
 			u.Prepare()
 		})
@@ -387,20 +375,18 @@ func TestUsuario_Prepare(t *testing.T) {
 func TestUsuario_Update(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		UID       uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
-		Admin     bool
-		Professor bool
-		Tecnico   bool
+		Perfil    Perfil
 		CreatedAt time.Time
 		UpdatedAt time.Time
 	}
 	type args struct {
-		db  *gorm.DB
-		uid uint64
+		db   *gorm.DB
+		uUID uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -414,17 +400,15 @@ func TestUsuario_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			got, err := u.Update(tt.args.db, tt.args.uid)
+			got, err := u.Update(tt.args.db, tt.args.uUID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -436,16 +420,16 @@ func TestUsuario_Update(t *testing.T) {
 	}
 }
 
-func TestUsuario_Validate(t *testing.T) {
+func TestUsuario_ValUIDate(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uint64
+		UID       uuid.UUID
 		Nome      string
 		Email     string
 		Senha     string
 		Ativo     bool
 		Admin     bool
-		Professor bool
+		Perfil    Perfil
 		Tecnico   bool
 		CreatedAt time.Time
 		UpdatedAt time.Time
@@ -464,18 +448,16 @@ func TestUsuario_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &Usuario{
-				Model:     tt.fields.Model,
-				ID:        tt.fields.ID,
-				Nome:      tt.fields.Nome,
-				Email:     tt.fields.Email,
-				Senha:     tt.fields.Senha,
-				Ativo:     tt.fields.Ativo,
-				Admin:     tt.fields.Admin,
-				Professor: tt.fields.Professor,
-				Tecnico:   tt.fields.Tecnico,
+				Model:  tt.fields.Model,
+				UID:    tt.fields.UID,
+				Nome:   tt.fields.Nome,
+				Email:  tt.fields.Email,
+				Senha:  tt.fields.Senha,
+				Ativo:  tt.fields.Ativo,
+				Perfil: tt.fields.Perfil,
 			}
-			if err := u.Validate(tt.args.action); (err != nil) != tt.wantErr {
-				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			if err := u.ValUIDate(tt.args.action); (err != nil) != tt.wantErr {
+				t.Errorf("ValUIDate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
