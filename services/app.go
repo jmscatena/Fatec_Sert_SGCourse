@@ -1,28 +1,27 @@
 package services
 
 import (
-	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/handlers"
 	"log"
 )
 
-func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (uuid.UUID, error) {
+func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (uint64, error) {
 	/* metodo com devolucao do UUID */
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
-		return uuid.Nil, nil // corrigir esse retorno
+		return 0, nil // corrigir esse retorno
 	}
 	recid, err := o.Create(conn.Db)
 	if err != nil {
 		log.Fatalln(err)
-		return uuid.Nil, err
+		return 0, err
 	}
 	return recid, nil
 }
 
-func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) (*T, error) {
+func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uint64, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
@@ -37,7 +36,7 @@ func Update[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, 
 	return rec, nil
 }
 
-func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, conn config.Connection) (int64, error) {
+func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uint64, conn config.Connection) (int64, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return -1, nil
@@ -50,7 +49,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID, con
 	return rec, nil
 }
 
-/*func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uuid.UUID) (*T, error) {
+/*func Get[T handlers.Tables](o handlers.PersistenceHandler[T], uid uint64) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)

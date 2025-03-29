@@ -1,7 +1,6 @@
 package administrativo
 
 import (
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,7 +17,7 @@ func ShouldUsuarioCreateCorrect(t *testing.T) {
 func TestUsuario_Create_Correct(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uuid.UUID
+		UID       uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -88,7 +87,7 @@ func TestUsuario_Create_Correct(t *testing.T) {
 func TestUsuario_Delete(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uuid.UUID
+		UID       uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -101,7 +100,7 @@ func TestUsuario_Delete(t *testing.T) {
 	}
 	type args struct {
 		db   *gorm.DB
-		uUID uuid.UUID
+		uUID uint64
 	}
 	tests := []struct {
 		name    string
@@ -138,7 +137,7 @@ func TestUsuario_Delete(t *testing.T) {
 func TestUsuario_DeleteBy(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uuid.UUID
+		UID       uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -152,7 +151,7 @@ func TestUsuario_DeleteBy(t *testing.T) {
 	type args struct {
 		db   *gorm.DB
 		cond string
-		uUID uuid.UUID
+		uUID uint64
 	}
 	tests := []struct {
 		name    string
@@ -189,7 +188,7 @@ func TestUsuario_DeleteBy(t *testing.T) {
 func TestUsuario_Find(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uuid.UUID
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -202,7 +201,7 @@ func TestUsuario_Find(t *testing.T) {
 	}
 	type args struct {
 		db   *gorm.DB
-		uUID uuid.UUID
+		uUID uint64
 	}
 	tests := []struct {
 		name    string
@@ -239,7 +238,7 @@ func TestUsuario_Find(t *testing.T) {
 func TestUsuario_FindBy(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uuid.UUID
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -253,7 +252,7 @@ func TestUsuario_FindBy(t *testing.T) {
 	type args struct {
 		db    *gorm.DB
 		param string
-		uUID  uuid.UUID
+		uUID  uint64
 	}
 	tests := []struct {
 		name    string
@@ -290,7 +289,7 @@ func TestUsuario_FindBy(t *testing.T) {
 func TestUsuario_List(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uuid.UUID
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -339,7 +338,7 @@ func TestUsuario_List(t *testing.T) {
 func TestUsuario_Prepare(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		ID        uuid.UUID
+		ID        uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -375,7 +374,7 @@ func TestUsuario_Prepare(t *testing.T) {
 func TestUsuario_Update(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uuid.UUID
+		UID       uint64
 		Nome      string
 		Email     string
 		Senha     string
@@ -386,7 +385,7 @@ func TestUsuario_Update(t *testing.T) {
 	}
 	type args struct {
 		db   *gorm.DB
-		uUID uuid.UUID
+		uUID uint64
 	}
 	tests := []struct {
 		name    string
@@ -423,7 +422,7 @@ func TestUsuario_Update(t *testing.T) {
 func TestUsuario_ValUIDate(t *testing.T) {
 	type fields struct {
 		Model     gorm.Model
-		UID       uuid.UUID
+		UID       uint64
 		Nome      string
 		Email     string
 		Senha     string
