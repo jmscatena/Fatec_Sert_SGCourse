@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
+	"strconv"
 	"time"
 )
 
 func CreateToken(user administrativo.Usuario, expire int, secretkey string) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"uuid": user.UID.String(), // Subject (user identifier)
-		"name": user.Nome,         // Issuer
+		"uuid": strconv.FormatUint(user.ID, 16), // Subject (user identifier)
+		"name": user.Nome,                       // Issuer
 		//"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
 		"exp": time.Now().Add(time.Duration(expire) * time.Minute).Unix(), // Expiration time
 		//"aud":  getRole(username),                // Audience (user role)
