@@ -2,7 +2,6 @@ package cursos
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,29 +16,29 @@ const (
 type Curso struct {
 	// Esta faltando os materiais
 	gorm.Model
-	UID     uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
-	Nome    string    `gorm:"size:255;not null;unique" json:"nome"`
-	Periodo Periodo   `json:"periodo" validate:"required"`
-	Ativo   bool      `gorm:"default:True;" json:"ativo"`
+	ID      uint64  `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Nome    string  `gorm:"size:255;not null;unique" json:"nome"`
+	Periodo Periodo `json:"periodo" validate:"required"`
+	Ativo   bool    `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Curso) Validate() error {
 	return nil
 }
 
-func (p *Curso) Create(db *gorm.DB) (uuid.UUID, error) {
+func (p *Curso) Create(db *gorm.DB) (uint64, error) {
 	if verr := p.Validate(); verr != nil {
-		return uuid.Nil, verr
+		return 0, verr
 	}
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return p.UID, nil
+	return p.ID, nil
 }
 
-func (p *Curso) Update(db *gorm.DB, uid uuid.UUID) (*Curso, error) {
-	db = db.Debug().Model(Curso{}).Where("id = ?", uid).Updates(Curso{
+func (p *Curso) Update(db *gorm.DB, id uint64) (*Curso, error) {
+	db = db.Debug().Model(Curso{}).Where("id = ?", id).Updates(Curso{
 		Nome:    p.Nome,
 		Periodo: p.Periodo,
 		Ativo:   p.Ativo,
@@ -61,8 +60,8 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 	return &Cursos, nil
 }
 
-func (u *Curso) Find(db *gorm.DB, param string, uid string) (*Curso, error) {
-	err := db.Debug().Model(Curso{}).Where(param, uid).Take(&u).Error
+func (u *Curso) Find(db *gorm.DB, param string, id string) (*Curso, error) {
+	err := db.Debug().Model(Curso{}).Where(param, id).Take(&u).Error
 	if err != nil {
 		return &Curso{}, err
 	}
@@ -73,38 +72,38 @@ func (u *Curso) Find(db *gorm.DB, param string, uid string) (*Curso, error) {
 }
 
 /*
-	func (p *Curso) Find(db *gorm.DB, uid uuid.UUID) (*Curso, error) {
-		err := db.Debug().Model(&Curso{}).Where("id = ?", uid).Take(&p).Error
+	func (p *Curso) Find(db *gorm.DB, id uint64) (*Curso, error) {
+		err := db.Debug().Model(&Curso{}).Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Curso{}, err
 		}
 		return p, nil
 	}
 
-	func (p *Curso) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Curso, error) {
+	func (p *Curso) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Curso, error) {
 		Cursos := []Curso{}
 		params := strings.Split(param, ";")
-		uids := uid[0].([]interface{})
-		if len(params) != len(uids) {
+		ids := id[0].([]interface{})
+		if len(params) != len(ids) {
 			return nil, errors.New("condição inválida")
 		}
-		result := db.Where(strings.Join(params, " AND "), uids...).Find(&Cursos)
+		result := db.Where(strings.Join(params, " AND "), ids...).Find(&Cursos)
 		if result.Error != nil {
 			return nil, result.Error
 		}
 		return &Cursos, nil
 	}
 */
-func (p *Curso) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
-	db = db.Delete(&Curso{}, "id = ? ", uid)
+func (p *Curso) Delete(db *gorm.DB, id uint64) (int64, error) {
+	db = db.Delete(&Curso{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
 	}
 	return db.RowsAffected, nil
 }
 
-func (p *Curso) DeleteBy(db *gorm.DB, cond string, uid uuid.UUID) (int64, error) {
-	result := db.Delete(&Curso{}, cond+" = ?", uid)
+func (p *Curso) DeleteBy(db *gorm.DB, cond string, id uint64) (int64, error) {
+	result := db.Delete(&Curso{}, cond+" = ?", id)
 	if result.Error != nil {
 		return 0, result.Error
 	}

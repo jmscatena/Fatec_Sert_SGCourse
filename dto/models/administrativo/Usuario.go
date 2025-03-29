@@ -21,13 +21,13 @@ const (
 
 type Usuario struct {
 	gorm.Model
-	PerfilID uint
-	UID      uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4()" json:"UID"`
-	Nome     string    `gorm:"size:255;not null;unique" json:"nome"`
-	Email    string    `gorm:"size:100;not null,email;" json:"email"`
-	Senha    string    `gorm:"size:100;not null;" json:"-"`
-	Ativo    bool      `gorm:"default:True;" json:"ativo"`
-	Perfil   Perfil    `gorm:"foreignKey:PerfilID,references:ID" json:"perfil" validate:"required"`
+	PerfilID uint64
+	UID      uint64 `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Nome     string `gorm:"size:255;not null;unique" json:"nome"`
+	Email    string `gorm:"size:100;not null,email;" json:"email"`
+	Senha    string `gorm:"size:100;not null;" json:"-"`
+	Ativo    bool   `gorm:"default:True;" json:"ativo"`
+	Perfil   Perfil `gorm:"foreignKey:PerfilID,references:ID" json:"perfil" validate:"required"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uuid.UUID, error) {

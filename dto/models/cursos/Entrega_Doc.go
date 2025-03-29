@@ -2,15 +2,14 @@ package cursos
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Entrega_Doc struct {
 	gorm.Model
-	SolicitacaoID uint
-	UID           uuid.UUID       `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
+	SolicitacaoID uint64
+	ID            uint64          `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Solicitacao   Solicitacao_Doc `gorm:"foreignKey:SolicitacaoID;references:ID,constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"json:"Solicitacao"`
 	Arquivo       string          `gorm:"type:text" json:"arquivo"`
 	CreatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -28,23 +27,23 @@ func (p *Entrega_Doc) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Entrega_Doc) Create(db *gorm.DB) (uuid.UUID, error) {
+func (p *Entrega_Doc) Create(db *gorm.DB) (uint64, error) {
 	if verr := p.Validate(); verr != nil {
-		return uuid.Nil, verr
+		return 0, verr
 	}
 	p.Prepare(db)
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return p.UID, nil
+	return p.ID, nil
 }
 
-func (p *Entrega_Doc) Update(db *gorm.DB, uid uuid.UUID) (*Entrega_Doc, error) {
+func (p *Entrega_Doc) Update(db *gorm.DB, id uint64) (*Entrega_Doc, error) {
 	p.Prepare(db)
-	//err := db.Debug().Model(&Entrega_Doc{}).Where("id = ?", uid).Take(&Entrega_Doc{}).UpdateColumns(
+	//err := db.Debug().Model(&Entrega_Doc{}).Where("id = ?", id).Take(&Entrega_Doc{}).UpdateColumns(
 	//	map[string]interface{}
-	db = db.Model(Entrega_Doc{}).Where("id = ?", uid).Updates(
+	db = db.Model(Entrega_Doc{}).Where("id = ?", id).Updates(
 		Entrega_Doc{
 			Solicitacao: p.Solicitacao,
 			Arquivo:     p.Arquivo,
@@ -66,8 +65,8 @@ func (p *Entrega_Doc) List(db *gorm.DB) (*[]Entrega_Doc, error) {
 	}
 	return &Entrega_Docs, nil
 }
-func (u *Entrega_Doc) Find(db *gorm.DB, param string, uid string) (*Entrega_Doc, error) {
-	err := db.Debug().Model(Entrega_Doc{}).Where(param, uid).Take(&u).Error
+func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint64) (*Entrega_Doc, error) {
+	err := db.Debug().Model(Entrega_Doc{}).Where(param, id).Take(&u).Error
 	if err != nil {
 		return &Entrega_Doc{}, err
 	}
@@ -78,31 +77,31 @@ func (u *Entrega_Doc) Find(db *gorm.DB, param string, uid string) (*Entrega_Doc,
 }
 
 /*
-	func (p *Entrega_Doc) Find(db *gorm.DB, uid uuid.UUID) (*Entrega_Doc, error) {
-		err := db.Debug().Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
+	func (p *Entrega_Doc) Find(db *gorm.DB, id uint64) (*Entrega_Doc, error) {
+		err := db.Debug().Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Entrega_Doc{}, err
 		}
 		return p, nil
 	}
 
-	func (p *Entrega_Doc) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Entrega_Doc, error) {
+	func (p *Entrega_Doc) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Entrega_Doc, error) {
 		Entrega_Docs := []Entrega_Doc{}
 		params := strings.Split(param, ";")
-		uids := uid[0].([]interface{})
-		if len(params) != len(uids) {
+		ids := id[0].([]interface{})
+		if len(params) != len(ids) {
 			return nil, errors.New("condição inválida")
 		}
-		result := db.Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), uids...).Find(&Entrega_Docs)
-		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), uids...)).Find(&Entrega_Docs)
+		result := db.Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), ids...).Find(&Entrega_Docs)
+		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), ids...)).Find(&Entrega_Docs)
 		if result.Error != nil {
 			return nil, result.Error
 		}
 		return &Entrega_Docs, nil
 	}
 */
-func (p *Entrega_Doc) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
-	db = db.Delete(&Entrega_Doc{}, "id = ? ", uid)
+func (p *Entrega_Doc) Delete(db *gorm.DB, id uint64) (int64, error) {
+	db = db.Delete(&Entrega_Doc{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
 	}

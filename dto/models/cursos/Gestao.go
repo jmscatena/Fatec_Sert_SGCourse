@@ -2,7 +2,6 @@ package cursos
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"html"
 	"log"
@@ -12,8 +11,8 @@ import (
 
 type Gestao struct {
 	gorm.Model
-	DisciplinaID string
-	UID          uuid.UUID  `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"ID"`
+	DisciplinaID uint64
+	ID           uint64     `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Disciplina   Disciplina `gorm:"foreignkey:DisciplinaID,references:ID" json:"disciplina"`
 	TipoArquivo  string     `gorm:"type:text" json:"tipoarquivo"`
 	Arquivo      string     `gorm:"type:text" json:"arquivo"`
@@ -42,19 +41,19 @@ func (p *Gestao) Prepare() {
 		log.Fatalf("Error during validation:%v", err)
 	}
 }
-func (p *Gestao) Create(db *gorm.DB) (uuid.UUID, error) {
+func (p *Gestao) Create(db *gorm.DB) (uint64, error) {
 	if verr := p.Validate(); verr != nil {
-		return uuid.Nil, verr
+		return 0, verr
 	}
 	p.Prepare()
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return p.UID, nil
+	return p.ID, nil
 }
-func (p *Gestao) Update(db *gorm.DB, uid uuid.UUID) (*Gestao, error) {
-	db = db.Debug().Model(&Gestao{}).Where("id = ?", uid).Updates(Gestao{
+func (p *Gestao) Update(db *gorm.DB, id uint64) (*Gestao, error) {
+	db = db.Debug().Model(&Gestao{}).Where("id = ?", id).Updates(Gestao{
 		Disciplina:  p.Disciplina,
 		TipoArquivo: p.TipoArquivo,
 		Arquivo:     p.Arquivo})
@@ -73,8 +72,8 @@ func (p *Gestao) List(db *gorm.DB) (*[]Gestao, error) {
 	return &Gestaos, nil
 }
 
-func (u *Gestao) Find(db *gorm.DB, param string, uid string) (*Gestao, error) {
-	err := db.Debug().Model(Gestao{}).Where(param, uid).Take(&u).Error
+func (u *Gestao) Find(db *gorm.DB, param string, id string) (*Gestao, error) {
+	err := db.Debug().Model(Gestao{}).Where(param, id).Take(&u).Error
 	if err != nil {
 		return &Gestao{}, err
 	}
@@ -85,22 +84,22 @@ func (u *Gestao) Find(db *gorm.DB, param string, uid string) (*Gestao, error) {
 }
 
 /*
-func (p *Gestao) Find(db *gorm.DB, uid uuid.UUID) (*Gestao, error) {
-	err := db.Debug().Model(&Gestao{}).Where("id = ?", uid).Take(&p).Error
+func (p *Gestao) Find(db *gorm.DB, id uint64) (*Gestao, error) {
+	err := db.Debug().Model(&Gestao{}).Where("id = ?", id).Take(&p).Error
 	if err != nil {
 		return &Gestao{}, err
 	}
 	return p, nil
 }
 
-func (p *Gestao) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Gestao, error) {
+func (p *Gestao) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Gestao, error) {
 	Gestaos := []Gestao{}
 	params := strings.Split(param, ";")
-	uids := uid[0].([]interface{})
-	if len(params) != len(uids) {
+	ids := id[0].([]interface{})
+	if len(params) != len(ids) {
 		return nil, errors.New("condição inválida")
 	}
-	result := db.Where(strings.Join(params, " AND "), uids...).Find(&Gestaos)
+	result := db.Where(strings.Join(params, " AND "), ids...).Find(&Gestaos)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -108,15 +107,15 @@ func (p *Gestao) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Gesta
 }
 */
 
-func (p *Gestao) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
-	db = db.Delete(&Gestao{}, "id = ? ", uid)
+func (p *Gestao) Delete(db *gorm.DB, id uint64) (int64, error) {
+	db = db.Delete(&Gestao{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
 	}
 	return db.RowsAffected, nil
 }
-func (p *Gestao) DeleteBy(db *gorm.DB, cond string, uid uuid.UUID) (int64, error) {
-	result := db.Delete(&Gestao{}, cond+" = ?", uid)
+func (p *Gestao) DeleteBy(db *gorm.DB, cond string, id uint64) (int64, error) {
+	result := db.Delete(&Gestao{}, cond+" = ?", id)
 	if result.Error != nil {
 		return 0, result.Error
 	}

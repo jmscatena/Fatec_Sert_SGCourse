@@ -2,7 +2,6 @@ package cursos
 
 import (
 	"errors"
-	"github.com/google/uuid"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
@@ -12,9 +11,9 @@ import (
 
 type Disciplina struct {
 	gorm.Model
-	UsuarioID uint
-	CursoID   uint
-	UID       uuid.UUID              `gorm:"type:uuid;default:uuid_generate_v4()" json:"ID"`
+	UsuarioID uint64
+	CursoID   uint64
+	ID        uint64                 `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
 	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`
@@ -41,23 +40,23 @@ func (p *Disciplina) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Disciplina) Create(db *gorm.DB) (uuid.UUID, error) {
+func (p *Disciplina) Create(db *gorm.DB) (uint64, error) {
 	if verr := p.Validate(); verr != nil {
-		return uuid.Nil, verr
+		return 0, verr
 	}
 	p.Prepare(db)
 	err := db.Debug().Omit("ID").Create(&p).Error
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return p.UID, nil
+	return p.ID, nil
 }
 
-func (p *Disciplina) Update(db *gorm.DB, uid uuid.UUID) (*Disciplina, error) {
+func (p *Disciplina) Update(db *gorm.DB, id uint64) (*Disciplina, error) {
 	p.Prepare(db)
-	//err := db.Debug().Model(&Disciplina{}).Where("id = ?", uid).Take(&Disciplina{}).UpdateColumns(
+	//err := db.Debug().Model(&Disciplina{}).Where("id = ?", id).Take(&Disciplina{}).UpdateColumns(
 	//	map[string]interface{}
-	db = db.Model(Disciplina{}).Where("id = ?", uid).Updates(
+	db = db.Model(Disciplina{}).Where("id = ?", id).Updates(
 		Disciplina{
 			Nome:     p.Nome,
 			Semestre: p.Semestre,
@@ -80,8 +79,8 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	}
 	return &Disciplinas, nil
 }
-func (u *Disciplina) Find(db *gorm.DB, param string, uid string) (*Disciplina, error) {
-	err := db.Debug().Model(Disciplina{}).Where(param, uid).Take(&u).Error
+func (u *Disciplina) Find(db *gorm.DB, param string, id string) (*Disciplina, error) {
+	err := db.Debug().Model(Disciplina{}).Where(param, id).Take(&u).Error
 	if err != nil {
 		return &Disciplina{}, err
 	}
@@ -92,31 +91,31 @@ func (u *Disciplina) Find(db *gorm.DB, param string, uid string) (*Disciplina, e
 }
 
 /*
-	func (p *Disciplina) Find(db *gorm.DB, uid uuid.UUID) (*Disciplina, error) {
-		err := db.Debug().Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", uid).Take(&p).Error
+	func (p *Disciplina) Find(db *gorm.DB, id uint64) (*Disciplina, error) {
+		err := db.Debug().Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Disciplina{}, err
 		}
 		return p, nil
 	}
 
-	func (p *Disciplina) FindBy(db *gorm.DB, param string, uid ...interface{}) (*[]Disciplina, error) {
+	func (p *Disciplina) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Disciplina, error) {
 		Disciplinas := []Disciplina{}
 		params := strings.Split(param, ";")
-		uids := uid[0].([]interface{})
-		if len(params) != len(uids) {
+		ids := id[0].([]interface{})
+		if len(params) != len(ids) {
 			return nil, errors.New("condição inválida")
 		}
-		result := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), uids...).Find(&Disciplinas)
-		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), uids...)).Find(&Disciplinas)
+		result := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), ids...).Find(&Disciplinas)
+		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), ids...)).Find(&Disciplinas)
 		if result.Error != nil {
 			return nil, result.Error
 		}
 		return &Disciplinas, nil
 	}
 */
-func (p *Disciplina) Delete(db *gorm.DB, uid uuid.UUID) (int64, error) {
-	db = db.Delete(&Disciplina{}, "id = ? ", uid)
+func (p *Disciplina) Delete(db *gorm.DB, id uint64) (int64, error) {
+	db = db.Delete(&Disciplina{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
 	}
