@@ -11,14 +11,14 @@ import (
 
 type Disciplina struct {
 	gorm.Model
-	ID        uint `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	UsuarioID uint
-	CursoID   uint
+	ID        uint                   `gorm:"primaryKey;autoIncrement" json:"ID"`
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
-	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
+	CursoID   uint                   `json:"cursoID"`
+	Curso     Curso                  `json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`
-	Usuario   administrativo.Usuario `gorm:"foreignkey:UsuarioID;references:ID" json:"professor"`
-	Ativo     bool                   `gorm:"default:True;" json:"ativo"`
+	UsuarioID uint                   `json:"usuarioID"`
+	Usuario   administrativo.Usuario `json:"professor"`
+	Ativo     bool                   `gorm:"default:true" json:"ativo"`
 }
 
 func (p *Disciplina) Validate() error {

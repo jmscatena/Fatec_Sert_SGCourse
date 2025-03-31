@@ -14,8 +14,8 @@ type Gestao struct {
 	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	TipoArquivo  string     `gorm:"type:text" json:"tipoarquivo"`
 	Arquivo      string     `gorm:"type:text" json:"arquivo"`
-	DisciplinaID uint       `gorm:"not null;index"`
-	Disciplina   Disciplina `gorm:"foreignKey:CategoryID;references:ID" json:"disciplina"`
+	DisciplinaID uint       `json:"disciplinaID"`
+	Disciplina   Disciplina `json:"disciplina"`
 	CreatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
