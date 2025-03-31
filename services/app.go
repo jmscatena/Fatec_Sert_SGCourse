@@ -78,7 +78,7 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Con
 	return rec, nil
 }
 
-func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values uint64, conn config.Connection) (*T, error) {
+func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil
