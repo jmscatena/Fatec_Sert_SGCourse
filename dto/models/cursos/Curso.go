@@ -60,8 +60,8 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 	return &Cursos, nil
 }
 
-func (u *Curso) Find(db *gorm.DB, param string, id string) (*Curso, error) {
-	err := db.Debug().Model(Curso{}).Where(param, id).Take(&u).Error
+func (u *Curso) Find(db *gorm.DB, param string, ID uint64) (*Curso, error) {
+	err := db.Debug().Model(Curso{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Curso{}, err
 	}

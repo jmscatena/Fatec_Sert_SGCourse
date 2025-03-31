@@ -60,7 +60,7 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	return &Solicitacao_Docs, nil
 }
 
-func (u *Solicitacao_Doc) Find(db *gorm.DB, param string, ID string) (*Solicitacao_Doc, error) {
+func (u *Solicitacao_Doc) Find(db *gorm.DB, param string, ID uint64) (*Solicitacao_Doc, error) {
 	err := db.Debug().Model(Solicitacao_Doc{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Solicitacao_Doc{}, err

@@ -72,8 +72,8 @@ func (p *Gestao) List(db *gorm.DB) (*[]Gestao, error) {
 	return &Gestaos, nil
 }
 
-func (u *Gestao) Find(db *gorm.DB, param string, id string) (*Gestao, error) {
-	err := db.Debug().Model(Gestao{}).Where(param, id).Take(&u).Error
+func (u *Gestao) Find(db *gorm.DB, param string, ID uint64) (*Gestao, error) {
+	err := db.Debug().Model(Gestao{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Gestao{}, err
 	}

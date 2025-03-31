@@ -79,8 +79,8 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	}
 	return &Disciplinas, nil
 }
-func (u *Disciplina) Find(db *gorm.DB, param string, id string) (*Disciplina, error) {
-	err := db.Debug().Model(Disciplina{}).Where(param, id).Take(&u).Error
+func (u *Disciplina) Find(db *gorm.DB, param string, ID uint64) (*Disciplina, error) {
+	err := db.Debug().Model(Disciplina{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Disciplina{}, err
 	}

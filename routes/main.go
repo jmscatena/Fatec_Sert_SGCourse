@@ -2,11 +2,11 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/google/uID"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/middleware"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/services"
+	"strconv"
 )
 
 func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.SecretsToken) *gin.Engine {
@@ -23,9 +23,9 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.Add[administrativo.Usuario](context, &user, conn)
 			})
 			userRoute.GET("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
+				ID, _ := context.Value("id").(string)
 				condition := "Id=?"
-				middleware.Get[administrativo.Usuario](context, &user, condition, ID.String(), conn)
+				middleware.Get[administrativo.Usuario](context, &user, condition, ID, conn)
 			})
 
 			userRoute.GET("/", func(context *gin.Context) {
@@ -38,11 +38,11 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 
 			userRoute.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
+				ID, _ := strconv.ParseUint(string(context.Param("id")), 10, 64)
 				middleware.Modify[administrativo.Usuario](context, &user, ID, conn)
 			})
 			userRoute.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
+				ID, _ := strconv.ParseUint(string(context.Param("id")), 10, 64)
 				middleware.Erase[administrativo.Usuario](context, &user, ID, conn)
 			})
 

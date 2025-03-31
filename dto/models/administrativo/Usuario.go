@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"html"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -96,16 +97,27 @@ func (u *Usuario) Find(db *gorm.DB, ID uint64) (*Usuario, error) {
 */
 
 func (u *Usuario) Find(db *gorm.DB, param string, ID string) (*Usuario, error) {
-	err := db.Debug().Model(Usuario{}).Where(param, ID).Take(&u).Error
+	var err error
+
+	if param == "Id=?" {
+		id, err := strconv.ParseUint(ID, 10, 64)
+		if err != nil {
+			return nil, errors.New("invalid ID format") // Handle parsing error
+		}
+		err = db.Debug().Model(Usuario{}).Where(param, id).Take(u).Error
+	} else {
+		err = db.Debug().Model(Usuario{}).Where(param, ID).Take(u).Error
+	}
+
 	if err != nil {
-		return &Usuario{}, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Usuario Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Usuario{}, errors.New("Usuario Inexistente")
-	}
+
 	return u, nil
 }
-
 func (u *Usuario) Delete(db *gorm.DB, ID uint64) (int64, error) {
 	db = db.Debug().Where("id = ?", ID).Delete(&Usuario{})
 	if db.Error != nil {
