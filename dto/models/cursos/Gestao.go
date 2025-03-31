@@ -13,12 +13,12 @@ type Gestao struct {
 	gorm.Model
 	ID uint `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 
-	TipoArquivo  string      `gorm:"type:text" json:"tipoarquivo"`
-	Arquivo      string      `gorm:"type:text" json:"arquivo"`
-	DisciplinaID uint        `gorm:"not null;index"`
-	Disciplina   *Disciplina `gorm:"foreignKey:CategoryID"`
-	CreatedAt    time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt    time.Time   `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	TipoArquivo  string     `gorm:"type:text" json:"tipoarquivo"`
+	Arquivo      string     `gorm:"type:text" json:"arquivo"`
+	DisciplinaID uint       `gorm:"not null;index"`
+	Disciplina   Disciplina `gorm:"foreignKey:CategoryID"`
+	CreatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Gestao) Validate() error {
