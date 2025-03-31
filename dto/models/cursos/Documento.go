@@ -18,7 +18,7 @@ type Documento struct {
 	gorm.Model
 	ID        uint      `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Titulo    string    `gorm:"size:255;not null;unique" json:"titulo"`
-	Tipo      Tipo      `gorm:"foreignKey:TipoID;references:ID" json:"tipo" validate:"required"`
+	Tipo      Tipo      `json:"tipo" validate:"required"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	Ativo     bool      `gorm:"default:True;" json:"ativo"`

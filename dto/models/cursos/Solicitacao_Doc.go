@@ -9,11 +9,11 @@ import (
 type Solicitacao_Doc struct {
 	// Esta faltando os materiais
 	gorm.Model
-	DocumentoID  uint
-	DisciplinaID uint
+	DocumentoID  uint       `json:"documentoID"`
+	DisciplinaID uint       `json:"disciplinaID"`
 	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Documento    Documento  `gorm:"foreignKey:DocumentoID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"documento"`
-	Disciplina   Disciplina `gorm:"foreignKey:DisciplinaID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"disciplina"`
+	Documento    Documento  `json:"documento"`
+	Disciplina   Disciplina `json:"disciplina"`
 	Entrega      bool       `gorm:"size:255;not null;unique" json:"entrega"`
 	Prazo        time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"prazo"`
 	Ativo        bool       `gorm:"default:True;" json:"ativo"`
