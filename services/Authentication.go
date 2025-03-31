@@ -8,6 +8,7 @@ import (
 	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -90,7 +91,7 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		err = config.StoreToken(token, userID.String(), 1440, conn)
+		err = config.StoreToken(token, strconv.FormatUint(userID, 10), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Could Not Signup."})
 			c.Abort()
@@ -135,14 +136,14 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		}
 		//Create access token
 		accesstoken, err := config.CreateToken(*foundUser, 1440, token.GetAccess())
-		err = config.StoreToken(accesstoken, foundUser.ID.String(), 1440, conn)
+		err = config.StoreToken(accesstoken, strconv.FormatUint(foundUser.ID, 10), 1440, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		//Create refresh token
 		refreshtoken, err := config.CreateToken(*foundUser, 180, token.GetRefresh())
-		err = config.StoreToken(foundUser.ID.String(), refreshtoken, 180, conn)
+		err = config.StoreToken(strconv.FormatUint(foundUser.ID, 10), refreshtoken, 180, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -223,26 +224,26 @@ func ValidateSession(conn config.Connection, tokenString string, token config.Se
 		return "", fmt.Errorf("Error validate session: %w", err)
 	}
 	if userId == "" {
-		tokenAccess, err := conn.NoSql.Get(user.ID.String()).Result()
+		tokenAccess, err := conn.NoSql.Get(strconv.FormatUint(user.ID, 10)).Result()
 		if err != nil || tokenAccess == "" {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 		tk, err := config.VerifyToken(tokenAccess, token.GetAccess())
 		if tk == nil {
-			config.RevokeToken(user.ID.String(), conn)
+			config.RevokeToken(strconv.FormatUint(user.ID, 10), conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 		refreshtk, err := config.CreateToken(user, 10, token.GetRefresh())
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
-		err = config.StoreToken(refreshtk, user.ID.String(), 10, conn)
+		err = config.StoreToken(refreshtk, strconv.FormatUint(user.ID, 10), 10, conn)
 		if err != nil {
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 	}
-	if userId == user.ID.String() {
-		tk, err := conn.NoSql.Get(user.ID.String()).Result()
+	if userId == strconv.FormatUint(user.ID, 10) {
+		tk, err := conn.NoSql.Get(strconv.FormatUint(user.ID, 10)).Result()
 		if err != nil || tk == "" {
 			config.RevokeToken(tokenString, conn)
 			config.RevokeToken(tk, conn)
