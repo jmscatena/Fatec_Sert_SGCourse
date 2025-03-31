@@ -11,9 +11,9 @@ import (
 
 type Disciplina struct {
 	gorm.Model
+	ID        uint `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	UsuarioID uint
 	CursoID   uint
-	ID        uint                   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
 	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`

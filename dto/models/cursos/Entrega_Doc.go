@@ -10,7 +10,7 @@ type Entrega_Doc struct {
 	gorm.Model
 	SolicitacaoID uint
 	ID            uint            `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Solicitacao   Solicitacao_Doc `gorm:"foreignKey:SolicitacaoID;references:ID,constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"json:"Solicitacao"`
+	Solicitacao   Solicitacao_Doc `gorm:"foreignKey:SolicitacaoID;references:ID"json:"Solicitacao"`
 	Arquivo       string          `gorm:"type:text" json:"arquivo"`
 	CreatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`

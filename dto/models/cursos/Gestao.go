@@ -11,11 +11,13 @@ import (
 
 type Gestao struct {
 	gorm.Model
-	ID          uint      `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	TipoArquivo string    `gorm:"type:text" json:"tipoarquivo"`
-	Arquivo     string    `gorm:"type:text" json:"arquivo"`
-	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	TipoArquivo  string     `gorm:"type:text" json:"tipoarquivo"`
+	Arquivo      string     `gorm:"type:text" json:"arquivo"`
+	DisciplinaID uint       `gorm:"not null;index"`
+	Disciplina   Disciplina `gorm:"foreignKey:CategoryID;references:ID" json:"disciplina"`
+	CreatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Gestao) Validate() error {
@@ -28,7 +30,7 @@ func (p *Gestao) Validate() error {
 	return nil
 }
 func (p *Gestao) Prepare() {
-	//p.Disciplina = p.Disciplina //realizar a varredura do registro
+	p.Disciplina = p.Disciplina //realizar a varredura do registro
 	p.TipoArquivo = html.EscapeString(strings.TrimSpace(p.TipoArquivo))
 	p.Arquivo = html.EscapeString(strings.TrimSpace(p.TipoArquivo))
 	p.CreatedAt = time.Now()
@@ -52,7 +54,7 @@ func (p *Gestao) Create(db *gorm.DB) (uint, error) {
 }
 func (p *Gestao) Update(db *gorm.DB, id uint) (*Gestao, error) {
 	db = db.Debug().Model(&Gestao{}).Where("id = ?", id).Updates(Gestao{
-		//	Disciplina:  p.Disciplina,
+		Disciplina:  p.Disciplina,
 		TipoArquivo: p.TipoArquivo,
 		Arquivo:     p.Arquivo})
 	if db.Error != nil {
