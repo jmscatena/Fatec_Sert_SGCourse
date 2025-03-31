@@ -16,8 +16,7 @@ const (
 
 type Documento struct {
 	gorm.Model
-	TipoID    uint
-	ID        uint64    `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	ID        uint      `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Titulo    string    `gorm:"size:255;not null;unique" json:"titulo"`
 	Tipo      Tipo      `gorm:"foreignKey:TipoID;references:ID" json:"tipo" validate:"required"`
 	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -29,7 +28,7 @@ func (p *Documento) Validate() error {
 	return nil
 }
 
-func (p *Documento) Create(db *gorm.DB) (uint64, error) {
+func (p *Documento) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
@@ -40,7 +39,7 @@ func (p *Documento) Create(db *gorm.DB) (uint64, error) {
 	return p.ID, nil
 }
 
-func (p *Documento) Update(db *gorm.DB, id uint64) (*Documento, error) {
+func (p *Documento) Update(db *gorm.DB, id uint) (*Documento, error) {
 	db = db.Debug().Model(Documento{}).Where("id = ?", id).Updates(Documento{
 		Titulo: p.Titulo,
 		Tipo:   p.Tipo,
@@ -63,7 +62,7 @@ func (p *Documento) List(db *gorm.DB) (*[]Documento, error) {
 	return &Documentos, nil
 }
 
-func (u *Documento) Find(db *gorm.DB, param string, ID uint64) (*Documento, error) {
+func (u *Documento) Find(db *gorm.DB, param string, ID uint) (*Documento, error) {
 	err := db.Debug().Model(Documento{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Documento{}, err
@@ -75,7 +74,7 @@ func (u *Documento) Find(db *gorm.DB, param string, ID uint64) (*Documento, erro
 }
 
 /*
-	func (p *Documento) Find(db *gorm.DB, id uint64) (*Documento, error) {
+	func (p *Documento) Find(db *gorm.DB, id uint) (*Documento, error) {
 		err := db.Debug().Model(&Documento{}).Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Documento{}, err
@@ -97,7 +96,7 @@ func (u *Documento) Find(db *gorm.DB, param string, ID uint64) (*Documento, erro
 		return &Documentos, nil
 	}
 */
-func (p *Documento) Delete(db *gorm.DB, id uint64) (int64, error) {
+func (p *Documento) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Documento{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
@@ -105,7 +104,7 @@ func (p *Documento) Delete(db *gorm.DB, id uint64) (int64, error) {
 	return db.RowsAffected, nil
 }
 
-func (p *Documento) DeleteBy(db *gorm.DB, cond string, id uint64) (int64, error) {
+func (p *Documento) DeleteBy(db *gorm.DB, cond string, id uint) (int64, error) {
 	result := db.Delete(&Documento{}, cond+" = ?", id)
 	if result.Error != nil {
 		return 0, result.Error

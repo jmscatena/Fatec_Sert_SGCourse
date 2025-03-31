@@ -32,7 +32,7 @@ func Add[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], co
 	}
 }
 
-func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint64, conn config.Connection) {
+func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint, conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		if err := c.ShouldBindJSON(&o); err != nil {
 			fmt.Println("ERRO:", err)
@@ -53,7 +53,7 @@ func Modify[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T],
 	}
 }
 
-func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint64, conn config.Connection) {
+func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint, conn config.Connection) {
 	if reflect.TypeOf(o) != nil {
 		var handler handlers.PersistenceHandler[T] = o
 		code, cerr := services.Del(handler, ID, conn)
@@ -66,7 +66,7 @@ func Erase[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], 
 }
 
 /*
-	func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint64) {
+	func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], ID uint) {
 		if reflect.TypeOf(o) != nil {
 			if ID == uID.Nil {
 				c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": "{}"})

@@ -11,9 +11,9 @@ import (
 
 type Disciplina struct {
 	gorm.Model
-	UsuarioID uint64
-	CursoID   uint64
-	ID        uint64                 `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	UsuarioID uint
+	CursoID   uint
+	ID        uint                   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome      string                 `gorm:"size:255;not null;unique" json:"nome"`
 	Curso     Curso                  `gorm:"foreignKey:CursoID;references:ID" json:"curso"`
 	Semestre  int                    `gorm:"default:-1" json:"semestre"`
@@ -40,7 +40,7 @@ func (p *Disciplina) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Disciplina) Create(db *gorm.DB) (uint64, error) {
+func (p *Disciplina) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
@@ -52,7 +52,7 @@ func (p *Disciplina) Create(db *gorm.DB) (uint64, error) {
 	return p.ID, nil
 }
 
-func (p *Disciplina) Update(db *gorm.DB, id uint64) (*Disciplina, error) {
+func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
 	p.Prepare(db)
 	//err := db.Debug().Model(&Disciplina{}).Where("id = ?", id).Take(&Disciplina{}).UpdateColumns(
 	//	map[string]interface{}
@@ -79,7 +79,7 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	}
 	return &Disciplinas, nil
 }
-func (u *Disciplina) Find(db *gorm.DB, param string, ID uint64) (*Disciplina, error) {
+func (u *Disciplina) Find(db *gorm.DB, param string, ID uint) (*Disciplina, error) {
 	err := db.Debug().Model(Disciplina{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Disciplina{}, err
@@ -91,7 +91,7 @@ func (u *Disciplina) Find(db *gorm.DB, param string, ID uint64) (*Disciplina, er
 }
 
 /*
-	func (p *Disciplina) Find(db *gorm.DB, id uint64) (*Disciplina, error) {
+	func (p *Disciplina) Find(db *gorm.DB, id uint) (*Disciplina, error) {
 		err := db.Debug().Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Disciplina{}, err
@@ -114,7 +114,7 @@ func (u *Disciplina) Find(db *gorm.DB, param string, ID uint64) (*Disciplina, er
 		return &Disciplinas, nil
 	}
 */
-func (p *Disciplina) Delete(db *gorm.DB, id uint64) (int64, error) {
+func (p *Disciplina) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Disciplina{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error

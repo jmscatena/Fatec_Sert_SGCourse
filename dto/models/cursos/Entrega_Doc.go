@@ -8,8 +8,8 @@ import (
 
 type Entrega_Doc struct {
 	gorm.Model
-	SolicitacaoID uint64
-	ID            uint64          `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	SolicitacaoID uint
+	ID            uint            `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Solicitacao   Solicitacao_Doc `gorm:"foreignKey:SolicitacaoID;references:ID,constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"json:"Solicitacao"`
 	Arquivo       string          `gorm:"type:text" json:"arquivo"`
 	CreatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
@@ -27,7 +27,7 @@ func (p *Entrega_Doc) Prepare(db *gorm.DB) (err error) {
 	return
 }
 
-func (p *Entrega_Doc) Create(db *gorm.DB) (uint64, error) {
+func (p *Entrega_Doc) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
@@ -39,7 +39,7 @@ func (p *Entrega_Doc) Create(db *gorm.DB) (uint64, error) {
 	return p.ID, nil
 }
 
-func (p *Entrega_Doc) Update(db *gorm.DB, id uint64) (*Entrega_Doc, error) {
+func (p *Entrega_Doc) Update(db *gorm.DB, id uint) (*Entrega_Doc, error) {
 	p.Prepare(db)
 	//err := db.Debug().Model(&Entrega_Doc{}).Where("id = ?", id).Take(&Entrega_Doc{}).UpdateColumns(
 	//	map[string]interface{}
@@ -65,7 +65,7 @@ func (p *Entrega_Doc) List(db *gorm.DB) (*[]Entrega_Doc, error) {
 	}
 	return &Entrega_Docs, nil
 }
-func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint64) (*Entrega_Doc, error) {
+func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint) (*Entrega_Doc, error) {
 	err := db.Debug().Model(Entrega_Doc{}).Where(param, id).Take(&u).Error
 	if err != nil {
 		return &Entrega_Doc{}, err
@@ -77,7 +77,7 @@ func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint64) (*Entrega_Doc, 
 }
 
 /*
-	func (p *Entrega_Doc) Find(db *gorm.DB, id uint64) (*Entrega_Doc, error) {
+	func (p *Entrega_Doc) Find(db *gorm.DB, id uint) (*Entrega_Doc, error) {
 		err := db.Debug().Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Entrega_Doc{}, err
@@ -100,7 +100,7 @@ func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint64) (*Entrega_Doc, 
 		return &Entrega_Docs, nil
 	}
 */
-func (p *Entrega_Doc) Delete(db *gorm.DB, id uint64) (int64, error) {
+func (p *Entrega_Doc) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Entrega_Doc{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error

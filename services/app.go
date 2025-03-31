@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (uint64, error) {
+func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connection) (uint, error) {
 	/* metodo com devolucao do UID */
 	//db, err := config.InitDB()
 	if conn.Db == nil {
@@ -21,7 +21,7 @@ func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connec
 	return recid, nil
 }
 
-func Update[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint64, conn config.Connection) (*T, error) {
+func Update[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		log.Fatalln("No connection Database")
@@ -36,7 +36,7 @@ func Update[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint64, conn
 	return rec, nil
 }
 
-func Del[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint64, conn config.Connection) (int64, error) {
+func Del[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint, conn config.Connection) (int64, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return -1, nil
@@ -49,7 +49,7 @@ func Del[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint64, conn co
 	return rec, nil
 }
 
-/*func Get[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint64) (*T, error) {
+/*func Get[T handlers.Tables](o handlers.PersistenceHandler[T], ID uint) (*T, error) {
 	db, err := database.Init()
 	if err != nil {
 		log.Fatalln(err)

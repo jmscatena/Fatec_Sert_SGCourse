@@ -16,7 +16,7 @@ const (
 type Curso struct {
 	// Esta faltando os materiais
 	gorm.Model
-	ID      uint64  `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	ID      uint    `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome    string  `gorm:"size:255;not null;unique" json:"nome"`
 	Periodo Periodo `json:"periodo" validate:"required"`
 	Ativo   bool    `gorm:"default:True;" json:"ativo"`
@@ -26,7 +26,7 @@ func (p *Curso) Validate() error {
 	return nil
 }
 
-func (p *Curso) Create(db *gorm.DB) (uint64, error) {
+func (p *Curso) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
@@ -37,7 +37,7 @@ func (p *Curso) Create(db *gorm.DB) (uint64, error) {
 	return p.ID, nil
 }
 
-func (p *Curso) Update(db *gorm.DB, id uint64) (*Curso, error) {
+func (p *Curso) Update(db *gorm.DB, id uint) (*Curso, error) {
 	db = db.Debug().Model(Curso{}).Where("id = ?", id).Updates(Curso{
 		Nome:    p.Nome,
 		Periodo: p.Periodo,
@@ -60,7 +60,7 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 	return &Cursos, nil
 }
 
-func (u *Curso) Find(db *gorm.DB, param string, ID uint64) (*Curso, error) {
+func (u *Curso) Find(db *gorm.DB, param string, ID uint) (*Curso, error) {
 	err := db.Debug().Model(Curso{}).Where(param, ID).Take(&u).Error
 	if err != nil {
 		return &Curso{}, err
@@ -72,7 +72,7 @@ func (u *Curso) Find(db *gorm.DB, param string, ID uint64) (*Curso, error) {
 }
 
 /*
-	func (p *Curso) Find(db *gorm.DB, id uint64) (*Curso, error) {
+	func (p *Curso) Find(db *gorm.DB, id uint) (*Curso, error) {
 		err := db.Debug().Model(&Curso{}).Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Curso{}, err
@@ -94,7 +94,7 @@ func (u *Curso) Find(db *gorm.DB, param string, ID uint64) (*Curso, error) {
 		return &Cursos, nil
 	}
 */
-func (p *Curso) Delete(db *gorm.DB, id uint64) (int64, error) {
+func (p *Curso) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Curso{}, "id = ? ", id)
 	if db.Error != nil {
 		return 0, db.Error
@@ -102,7 +102,7 @@ func (p *Curso) Delete(db *gorm.DB, id uint64) (int64, error) {
 	return db.RowsAffected, nil
 }
 
-func (p *Curso) DeleteBy(db *gorm.DB, cond string, id uint64) (int64, error) {
+func (p *Curso) DeleteBy(db *gorm.DB, cond string, id uint) (int64, error) {
 	result := db.Delete(&Curso{}, cond+" = ?", id)
 	if result.Error != nil {
 		return 0, result.Error
