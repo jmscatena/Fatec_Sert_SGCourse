@@ -38,12 +38,12 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 
 			userRoute.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := strconv.ParseUint(string(context.Param("id")), 10, 64)
-				middleware.Modify[administrativo.Usuario](context, &user, ID, conn)
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Modify[administrativo.Usuario](context, &user, uint(ID), conn)
 			})
 			userRoute.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := strconv.ParseUint(string(context.Param("id")), 10, 64)
-				middleware.Erase[administrativo.Usuario](context, &user, ID, conn)
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Erase[administrativo.Usuario](context, &user, uint(ID), conn)
 			})
 
 		}

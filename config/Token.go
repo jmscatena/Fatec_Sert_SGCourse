@@ -10,8 +10,8 @@ import (
 
 func CreateToken(user administrativo.Usuario, expire int, secretkey string) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"uID":  strconv.FormatUint(user.ID, 16), // Subject (user identifier)
-		"name": user.Nome,                       // Issuer
+		"uID":  strconv.Itoa(int(user.ID)), // Subject (user identifier)
+		"name": user.Nome,                  // Issuer
 		//"exp":  time.Now().Add(time.Hour).Unix(), // Expiration time
 		"exp": time.Now().Add(time.Duration(expire) * time.Minute).Unix(), // Expiration time
 		//"aud":  getRole(username),                // Audience (user role)
