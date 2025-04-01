@@ -60,7 +60,7 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}
 
-		validationErr := validate.Struct(user)
+		/*validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
 			c.Abort()
@@ -71,8 +71,15 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			c.Abort()
 			return
-		}
-		if foundUser != nil {
+		}*/
+		if user.Email != "" {
+			foundUser, _ := Get[administrativo.Usuario](&user, "email=?", user.Email, conn)
+			if foundUser != nil {
+				c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+				c.Abort()
+				return
+			}
+		} else {
 			c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
 			c.Abort()
 			return
@@ -80,6 +87,7 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 
 		userID, err := New[administrativo.Usuario](&user, conn)
 		user.ID = userID
+		println(err)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
 			c.Abort()

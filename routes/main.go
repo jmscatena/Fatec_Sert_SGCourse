@@ -16,6 +16,10 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 		{
 			login.POST("/", services.Login(conn, token))
 		}
+		signup := main.Group("signup")
+		{
+			signup.POST("/", services.Signup(conn, token))
+		}
 		userRoute := main.Group("user", services.Authenticate(conn, token))
 		{
 			var user administrativo.Usuario
