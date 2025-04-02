@@ -15,7 +15,7 @@ func New[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Connec
 	}
 	recid, err := o.Create(conn.Db)
 	if err != nil {
-		log.Fatalln(err)
+		//log.Fatalln(err)
 		return 0, err
 	}
 	return recid, nil

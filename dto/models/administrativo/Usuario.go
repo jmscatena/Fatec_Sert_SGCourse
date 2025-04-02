@@ -14,14 +14,15 @@ import (
 type Perfil string
 
 const (
-	professor   Perfil = "professor"
+	diretor     Perfil = "diretor"
 	coordenador Perfil = "coordenador"
+	professor   Perfil = "professor"
 	funcionario Perfil = "funcionario"
 )
 
 type Usuario struct {
 	gorm.Model
-	PerfilID uint
+	PerfilID string
 	ID       uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome     string `gorm:"size:255;not null;unique" json:"nome"`
 	Email    string `gorm:"size:100;not null,email;" json:"email"`
@@ -45,7 +46,9 @@ func (u *Usuario) Create(db *gorm.DB) (uint, error) {
 func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 
 	if verr := u.Validate("insert"); verr != nil {
+		println(verr)
 		return nil, verr
+
 	}
 	u.Prepare()
 	db = db.Model(Usuario{}).Where("id = ?", ID).Updates(Usuario{
@@ -141,7 +144,12 @@ func (u *Usuario) Validate(action string) error {
 	if u.Email == "" || u.Email == "null" {
 		return errors.New("obrigatório: email")
 	}
-	return nil
+	switch u.Perfil {
+	case diretor, coordenador, professor, funcionario:
+		return nil // Perfil válido
+	default:
+		return errors.New("perfil incorreto")
+	}
 }
 
 func Hash(Senha string) []byte {

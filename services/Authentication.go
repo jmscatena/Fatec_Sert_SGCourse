@@ -73,26 +73,31 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}*/
 		if user.Email != "" {
-			foundUser, _ := Get[administrativo.Usuario](&user, "email=?", user.Email, conn)
-			if foundUser != nil {
-				c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+			existUser, _ := Get[administrativo.Usuario](&user, "perfil=?", "diretor", conn)
+			if existUser != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 				c.Abort()
 				return
+			} else {
+				foundUser, _ := Get[administrativo.Usuario](&user, "email=?", user.Email, conn)
+				if foundUser != nil {
+					c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+					c.Abort()
+					return
+				}
 			}
 		} else {
-			c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+			c.JSON(http.StatusConflict, gin.H{"error": "Invalid User !!!"})
 			c.Abort()
 			return
 		}
-
 		userID, err := New[administrativo.Usuario](&user, conn)
-		user.ID = userID
-		println(err)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
+		user.ID = userID
 		token, err := config.CreateToken(user, 1440, token.GetAccess())
 		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
@@ -123,8 +128,6 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
 			return
 		}
-		println(json_map["email"])
-		println(json_map["code"])
 		password := json_map["code"].(string)
 		condition := "Email=?"
 		foundUser, err := Get[administrativo.Usuario](&user, condition, json_map["email"].(string), conn)
@@ -133,8 +136,6 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		println(foundUser.Nome)
-		println(password)
 		//foundUser := (*foundUsers)[0]
 		err = administrativo.VerifyPassword(password, foundUser.Senha)
 		if err != nil {
@@ -175,8 +176,8 @@ func Logout(conn config.Connection) gin.HandlerFunc {
 		}
 		// Verify the JWT token
 		tokenString := tokenParts[1]
-		config.RevokeToken(tokenString, conn)
-		config.RevokeToken(userID, conn)
+		_ = config.RevokeToken(tokenString, conn)
+		_ = config.RevokeToken(userID, conn)
 		c.Redirect(http.StatusFound, "/login")
 	}
 }
@@ -238,7 +239,7 @@ func ValidateSession(conn config.Connection, tokenString string, token config.Se
 		}
 		tk, err := config.VerifyToken(tokenAccess, token.GetAccess())
 		if tk == nil {
-			config.RevokeToken(strconv.Itoa(int(user.ID)), conn)
+			_ = config.RevokeToken(strconv.Itoa(int(user.ID)), conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 		refreshtk, err := config.CreateToken(user, 10, token.GetRefresh())
@@ -253,8 +254,8 @@ func ValidateSession(conn config.Connection, tokenString string, token config.Se
 	if userId == strconv.Itoa(int(user.ID)) {
 		tk, err := conn.NoSql.Get(strconv.Itoa(int(user.ID))).Result()
 		if err != nil || tk == "" {
-			config.RevokeToken(tokenString, conn)
-			config.RevokeToken(tk, conn)
+			_ = config.RevokeToken(tokenString, conn)
+			_ = config.RevokeToken(tk, conn)
 			return "", fmt.Errorf("Error validate session: %w", err)
 		}
 	}
