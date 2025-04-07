@@ -124,6 +124,11 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		json_map := make(map[string]interface{})
 		err := json.NewDecoder(c.Request.Body).Decode(&json_map)
 		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err != nil {
 			//c.ShouldBindJSON(&json_map);
 			c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
 			return
@@ -137,7 +142,7 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}
 		//foundUser := (*foundUsers)[0]
-		err = administrativo.VerifyPassword(password, foundUser.Senha)
+		err = administrativo.VerifyPassword(foundUser.Senha, password)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
@@ -157,7 +162,7 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"id": foundUser.ID, "data": refreshtoken})
+		c.JSON(http.StatusOK, gin.H{"name": foundUser.Nome, "email": foundUser.Email, "profile": foundUser.Perfil, "data": refreshtoken})
 
 	}
 }
@@ -185,16 +190,16 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		userID := c.Request.Header.Get("ID")
-
 		if authHeader == "" || userID == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Empty Authorization"})
 			c.Abort()
 			return
 		}
 		// Split the header value into "Bearer " and the token
 		tokenParts := strings.Split(authHeader, " ")
+
 		if len(tokenParts) != 2 || tokenParts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Malformed Authorization"})
 			c.Abort()
 			return
 		}
@@ -206,7 +211,7 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 			c.Abort()
 			return
 		}
-		condition := "ID=?"
+		condition := "Email=?"
 		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), condition, userID, conn)
 		//		foundUser := (*foundUsers)[0]
 		token, err := ValidateSession(conn, tokenString, token, *foundUser)

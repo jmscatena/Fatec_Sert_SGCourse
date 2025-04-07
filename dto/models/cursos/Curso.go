@@ -3,6 +3,7 @@ package cursos
 import (
 	"errors"
 	"gorm.io/gorm"
+	"strconv"
 )
 
 type Periodo string
@@ -43,7 +44,6 @@ func (p *Curso) Update(db *gorm.DB, id uint) (*Curso, error) {
 		Periodo: p.Periodo,
 		Ativo:   p.Ativo,
 	})
-
 	if db.Error != nil {
 		return nil, db.Error
 	}
@@ -60,14 +60,37 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 	return &Cursos, nil
 }
 
-func (u *Curso) Find(db *gorm.DB, param string, ID uint) (*Curso, error) {
-	err := db.Debug().Model(Curso{}).Where(param, ID).Take(&u).Error
+/*
+	func (u *Curso) Find(db *gorm.DB, param string, ID uint) (*Curso, error) {
+		err := db.Debug().Model(Curso{}).Where(param, ID).Take(&u).Error
+		if err != nil {
+			return &Curso{}, err
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &Curso{}, errors.New("Gestao Material Inexistente")
+		}
+		return u, nil
+	}
+*/
+func (u *Curso) Find(db *gorm.DB, param string, ID string) (*Curso, error) {
+	var err error
+	if param == "Id=?" {
+		id, err := strconv.ParseUint(ID, 10, 64)
+		if err != nil {
+			return nil, errors.New("invalid ID format") // Handle parsing error
+		}
+		err = db.Debug().Model(Curso{}).Where(param, id).Take(u).Error
+	} else {
+		err = db.Debug().Model(Curso{}).Where(param, ID).Take(u).Error
+	}
+
 	if err != nil {
-		return &Curso{}, err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Curso Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Curso{}, errors.New("Gestao Material Inexistente")
-	}
+
 	return u, nil
 }
 

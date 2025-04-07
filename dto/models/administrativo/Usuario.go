@@ -2,6 +2,7 @@ package administrativo
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -25,8 +26,8 @@ type Usuario struct {
 	PerfilID string
 	ID       uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome     string `gorm:"size:255;not null;unique" json:"nome"`
-	Email    string `gorm:"size:100;not null,email;" json:"email"`
-	Senha    string `gorm:"size:100;not null;" json:"-"`
+	Email    string `gorm:"unique;size:100;not null,email;" json:"email"`
+	Senha    string `gorm:"size:1024;not null;" json:"senha"`
 	Ativo    bool   `gorm:"default:True;" json:"ativo"`
 	Perfil   Perfil `gorm:"foreignKey:PerfilID,references:ID" json:"perfil" validate:"required"`
 }
@@ -101,7 +102,6 @@ func (u *Usuario) Find(db *gorm.DB, ID uint) (*Usuario, error) {
 
 func (u *Usuario) Find(db *gorm.DB, param string, ID string) (*Usuario, error) {
 	var err error
-
 	if param == "Id=?" {
 		id, err := strconv.ParseUint(ID, 10, 64)
 		if err != nil {
@@ -158,15 +158,18 @@ func Hash(Senha string) []byte {
 }
 
 func VerifyPassword(hashedSenha string, senha string) error {
+	fmt.Println(hashedSenha, senha)
+	fmt.Println(bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha)))
+	//fmt.Println(bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha)))
 	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha))
 }
 
 func (u *Usuario) Prepare() {
 	u.Nome = html.EscapeString(strings.TrimSpace(u.Nome))
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
-	u.Senha = string(Hash(u.Senha))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
+	u.Senha = string(Hash(u.Senha))
 
 	err := u.Validate("padrao")
 	if err != nil {
