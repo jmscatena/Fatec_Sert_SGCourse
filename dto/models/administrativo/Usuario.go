@@ -2,7 +2,6 @@ package administrativo
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -158,9 +157,6 @@ func Hash(Senha string) []byte {
 }
 
 func VerifyPassword(hashedSenha string, senha string) error {
-	fmt.Println(hashedSenha, senha)
-	fmt.Println(bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha)))
-	//fmt.Println(bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha)))
 	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha))
 }
 
