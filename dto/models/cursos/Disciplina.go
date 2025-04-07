@@ -5,6 +5,7 @@ import (
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -79,13 +80,36 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	}
 	return &Disciplinas, nil
 }
-func (u *Disciplina) Find(db *gorm.DB, param string, ID uint) (*Disciplina, error) {
-	err := db.Debug().Model(Disciplina{}).Where(param, ID).Take(&u).Error
-	if err != nil {
-		return &Disciplina{}, err
+
+/*
+	func (u *Disciplina) Find(db *gorm.DB, param string, ID uint) (*Disciplina, error) {
+		err := db.Debug().Model(Disciplina{}).Where(param, ID).Take(&u).Error
+		if err != nil {
+			return &Disciplina{}, err
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &Disciplina{}, errors.New("Laboratorio Inexistente")
+		}
+		return u, nil
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Disciplina{}, errors.New("Laboratorio Inexistente")
+*/
+func (u *Disciplina) Find(db *gorm.DB, param string, ID string) (*Disciplina, error) {
+	var err error
+	if param == "Id=?" {
+		id, err := strconv.ParseUint(ID, 10, 64)
+		if err != nil {
+			return nil, errors.New("invalid ID format") // Handle parsing error
+		}
+		err = db.Debug().Model(Disciplina{}).Where(param, id).Take(u).Error
+	} else {
+		err = db.Debug().Model(Disciplina{}).Where(param, ID).Take(u).Error
+	}
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Disciplina Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
 	}
 	return u, nil
 }

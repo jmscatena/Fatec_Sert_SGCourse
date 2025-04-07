@@ -90,7 +90,40 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.GetAll[curso.Curso](context, &course, conn)
 			})
 		}
+		disciplineRoute := main.Group("discipline", services.Authenticate(conn, token))
+		{
+			var discipline curso.Disciplina
+			disciplineRoute.POST("/", func(context *gin.Context) {
+				middleware.Add[curso.Disciplina](context, &discipline, conn)
+			})
+			disciplineRoute.GET("/:id", func(context *gin.Context) {
+				ID := context.Param("id")
+				condition := "Id=?"
+				middleware.Get[curso.Disciplina](context, &discipline, condition, ID, conn)
+			})
+			disciplineRoute.GET("/admin/", func(context *gin.Context) {
+				//colocar as configuracoes para os params q virao do frontend
+				params := "admin=?;ativo=?"
+				middleware.Get[curso.Disciplina](context, &discipline, params, "false; true", conn)
+			})
 
+			disciplineRoute.PATCH("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Modify[curso.Disciplina](context, &discipline, uint(ID), conn)
+			})
+			disciplineRoute.DELETE("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Erase[curso.Disciplina](context, &discipline, uint(ID), conn)
+			})
+
+		}
+		disciplinesRoute := main.Group("disciplines", services.Authenticate(conn, token))
+		{
+			var disciplines curso.Disciplina
+			disciplinesRoute.GET("/", func(context *gin.Context) {
+				middleware.GetAll[curso.Disciplina](context, &disciplines, conn)
+			})
+		}
 	}
 	/*
 		matRoute := main.Group("materiais", services.Authenticate(conn, token))
