@@ -6,29 +6,20 @@ import (
 	"gorm.io/gorm"
 	"html"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 )
 
-type Perfil string
-
-const (
-	diretor     Perfil = "diretor"
-	coordenador Perfil = "coordenador"
-	professor   Perfil = "professor"
-	funcionario Perfil = "funcionario"
-)
-
 type Usuario struct {
 	gorm.Model
-	PerfilID string
-	ID       uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Nome     string `gorm:"size:255;not null;unique" json:"nome"`
-	Email    string `gorm:"unique;size:100;not null,email;" json:"email"`
-	Senha    string `gorm:"size:1024;not null;" json:"senha"`
-	Ativo    bool   `gorm:"default:True;" json:"ativo"`
-	Perfil   Perfil `gorm:"foreignKey:PerfilID,references:ID" json:"perfil" validate:"required"`
+	ID          uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Nome        string `gorm:"size:255;not null;unique" json:"nome"`
+	Email       string `gorm:"unique;size:100;not null,email;" json:"email"`
+	Senha       string `gorm:"size:1024;not null;" json:"senha"`
+	Ativo       bool   `gorm:"default:True;" json:"ativo"`
+	Diretor     bool   `gorm:"default:false" json:"diretor"`
+	Coordenador bool   `gorm:"default:false" json:"coordenador"`
+	Professor   bool   `gorm:"default:false" json:"professor"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uint, error) {
@@ -52,10 +43,9 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 	}
 	u.Prepare()
 	db = db.Model(Usuario{}).Where("id = ?", ID).Updates(Usuario{
-		Senha:  u.Senha,
-		Nome:   u.Nome,
-		Email:  u.Email,
-		Perfil: u.Perfil,
+		Senha: u.Senha,
+		Nome:  u.Nome,
+		Email: u.Email,
 	})
 
 	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", ID).Take(&Usuario{}).UpdateColumns(
@@ -99,27 +89,43 @@ func (u *Usuario) Find(db *gorm.DB, ID uint) (*Usuario, error) {
 }
 */
 
-func (u *Usuario) Find(db *gorm.DB, param string, ID string) (*Usuario, error) {
-	var err error
-	if param == "Id=?" {
-		id, err := strconv.ParseUint(ID, 10, 64)
-		if err != nil {
-			return nil, errors.New("invalid ID format") // Handle parsing error
+func (u *Usuario) Find(db *gorm.DB, params map[string]interface{}) (*Usuario, error) {
+	/*	var err error
+		if param == "Id=?" {
+			id, err := strconv.ParseUint(ID, 10, 64)
+			if err != nil {
+				return nil, errors.New("invalid ID format") // Handle parsing error
+			}
+			err = db.Debug().Model(Usuario{}).Where(param, id).Take(u).Error
+		} else {
+			err = db.Debug().Model(Usuario{}).Where(param, ID).Take(u).Error
 		}
-		err = db.Debug().Model(Usuario{}).Where(param, id).Take(u).Error
-	} else {
-		err = db.Debug().Model(Usuario{}).Where(param, ID).Take(u).Error
-	}
 
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("Usuario Inexistente")
+			}
+			return nil, err // Return the original error if it's not RecordNotFound
+		}
+		return u, nil
+	*/
+	var err error
+	query := db.Model(&Usuario{})
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
+		}
+	}
+	err = query.Find(&u).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Usuario Inexistente")
 		}
 		return nil, err // Return the original error if it's not RecordNotFound
 	}
-
 	return u, nil
 }
+
 func (u *Usuario) Delete(db *gorm.DB, ID uint) (int64, error) {
 	db = db.Debug().Where("id = ?", ID).Delete(&Usuario{})
 	if db.Error != nil {
@@ -143,12 +149,10 @@ func (u *Usuario) Validate(action string) error {
 	if u.Email == "" || u.Email == "null" {
 		return errors.New("obrigatório: email")
 	}
-	switch u.Perfil {
-	case diretor, coordenador, professor, funcionario:
-		return nil // Perfil válido
-	default:
-		return errors.New("perfil incorreto")
+	if u.Senha == "" || u.Senha == "null" {
+		return errors.New("obrigatório: senha")
 	}
+	return nil
 }
 
 func Hash(Senha string) []byte {
@@ -163,10 +167,9 @@ func VerifyPassword(hashedSenha string, senha string) error {
 func (u *Usuario) Prepare() {
 	u.Nome = html.EscapeString(strings.TrimSpace(u.Nome))
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
+	u.Senha = string(Hash(u.Senha))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
-	u.Senha = string(Hash(u.Senha))
-
 	err := u.Validate("padrao")
 	if err != nil {
 		log.Fatalf("Error during validation:%v", err)
