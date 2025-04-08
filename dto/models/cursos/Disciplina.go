@@ -5,7 +5,6 @@ import (
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"html"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -35,6 +34,7 @@ func (p *Disciplina) Validate() error {
 func (p *Disciplina) Prepare(db *gorm.DB) (err error) {
 	p.Nome = html.EscapeString(strings.TrimSpace(p.Nome))
 	p.Semestre = int(p.Semestre)
+	p.CursoID = uint(p.CursoID)
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 
@@ -62,7 +62,7 @@ func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
 			Nome:     p.Nome,
 			Semestre: p.Semestre,
 			Ativo:    p.Ativo,
-			Curso:    p.Curso,
+			CursoID:  p.CursoID,
 		})
 	if db.Error != nil {
 		return &Disciplina{}, db.Error
@@ -72,9 +72,9 @@ func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
 
 func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	Disciplinas := []Disciplina{}
-	//err := db.Debug().Model(&Disciplina{}).Limit(100).Find(&Disciplinas).Error
+	err := db.Debug().Model(&Disciplina{}).Limit(100).Find(&Disciplinas).Error
 	//result := db.Find(&Disciplinas)
-	err := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Find(&Disciplinas).Error
+	//err := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Find(&Disciplinas).Error
 	if err != nil {
 		return nil, err
 	}
@@ -93,21 +93,18 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 		return u, nil
 	}
 */
-func (u *Disciplina) Find(db *gorm.DB, param string, ID string) (*Disciplina, error) {
+func (u *Disciplina) Find(db *gorm.DB, params map[string]interface{}) (*Disciplina, error) {
 	var err error
-	if param == "Id=?" {
-		id, err := strconv.ParseUint(ID, 10, 64)
-		if err != nil {
-			return nil, errors.New("invalid ID format") // Handle parsing error
+	query := db.Model(&Curso{})
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
 		}
-		err = db.Debug().Model(Disciplina{}).Where(param, id).Take(u).Error
-	} else {
-		err = db.Debug().Model(Disciplina{}).Where(param, ID).Take(u).Error
 	}
-
+	err = query.Find(&u).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("Disciplina Inexistente")
+			return nil, errors.New("Usuario Inexistente")
 		}
 		return nil, err // Return the original error if it's not RecordNotFound
 	}
