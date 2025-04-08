@@ -78,12 +78,12 @@ func GetAll[T handlers.Tables](o handlers.PersistenceHandler[T], conn config.Con
 	return rec, nil
 }
 
-func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param string, values string, conn config.Connection) (*T, error) {
+func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param map[string]interface{}, conn config.Connection) (*T, error) {
 	//db, err := config.InitDB()
 	if conn.Db == nil {
 		return nil, nil
 	}
-	rec, err := o.Find(conn.Db, param, values)
+	rec, err := o.Find(conn.Db, param)
 	if err != nil {
 		//log.Fatalln(err)
 		return nil, err
