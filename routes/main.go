@@ -29,8 +29,8 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			userRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				condition := "Id=?"
-				middleware.Get[administrativo.Usuario](context, &user, condition, ID, conn)
+				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 
 			userRoute.GET("/", func(context *gin.Context) {
@@ -38,8 +38,13 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			userRoute.GET("/admin/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
-				params := "admin=?;ativo=?"
-				middleware.Get[administrativo.Usuario](context, &user, params, "false; true", conn)
+				params := map[string]interface{}{"Diretor": true, "Ativo": true}
+				middleware.Get[administrativo.Usuario](context, &user, params, conn)
+			})
+			userRoute.GET("/professors/", func(context *gin.Context) {
+				//colocar as configuracoes para os params q virao do frontend
+				params := map[string]interface{}{"Coordenador": true, "Professor": true, "Ativo": true}
+				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 
 			userRoute.PATCH("/:id", func(context *gin.Context) {
@@ -60,17 +65,12 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			courseRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				condition := "Id=?"
-				middleware.Get[curso.Curso](context, &course, condition, ID, conn)
+				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				middleware.Get[curso.Curso](context, &course, params, conn)
 			})
 
 			courseRoute.GET("/", func(context *gin.Context) {
 				middleware.GetAll[curso.Curso](context, &course, conn)
-			})
-			courseRoute.GET("/admin/", func(context *gin.Context) {
-				//colocar as configuracoes para os params q virao do frontend
-				params := "admin=?;ativo=?"
-				middleware.Get[curso.Curso](context, &course, params, "false; true", conn)
 			})
 
 			courseRoute.PATCH("/:id", func(context *gin.Context) {
@@ -98,15 +98,9 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			disciplineRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				condition := "Id=?"
-				middleware.Get[curso.Disciplina](context, &discipline, condition, ID, conn)
+				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				middleware.Get[curso.Disciplina](context, &discipline, params, conn)
 			})
-			disciplineRoute.GET("/admin/", func(context *gin.Context) {
-				//colocar as configuracoes para os params q virao do frontend
-				params := "admin=?;ativo=?"
-				middleware.Get[curso.Disciplina](context, &discipline, params, "false; true", conn)
-			})
-
 			disciplineRoute.PATCH("/:id", func(context *gin.Context) {
 				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
 				middleware.Modify[curso.Disciplina](context, &discipline, uint(ID), conn)

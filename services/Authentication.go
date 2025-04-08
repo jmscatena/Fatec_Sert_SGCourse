@@ -73,13 +73,14 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}*/
 		if user.Email != "" {
-			existUser, _ := Get[administrativo.Usuario](&user, "perfil=?", "diretor", conn)
+
+			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Diretor": true, "Ativo": true}, conn)
 			if existUser != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 				c.Abort()
 				return
 			} else {
-				foundUser, _ := Get[administrativo.Usuario](&user, "email=?", user.Email, conn)
+				foundUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": user.Email, "Ativo": true}, conn)
 				if foundUser != nil {
 					c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
 					c.Abort()
@@ -134,8 +135,7 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}
 		password := json_map["code"].(string)
-		condition := "Email=?"
-		foundUser, err := Get[administrativo.Usuario](&user, condition, json_map["email"].(string), conn)
+		foundUser, err := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": json_map["email"].(string), "Ativo": true}, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
@@ -162,7 +162,18 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"name": foundUser.Nome, "email": foundUser.Email, "profile": foundUser.Perfil, "data": refreshtoken})
+		var perfil string
+		if foundUser.Diretor == true {
+			perfil += "Diretor; "
+		}
+		if foundUser.Coordenador == true {
+			perfil += "Coordenador; "
+		}
+		if foundUser.Professor == true {
+			perfil += "Professor"
+		}
+
+		c.JSON(http.StatusOK, gin.H{"name": foundUser.Nome, "email": foundUser.Email, "profile": perfil, "data": refreshtoken})
 
 	}
 }
@@ -211,8 +222,7 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 			c.Abort()
 			return
 		}
-		condition := "Email=?"
-		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), condition, userID, conn)
+		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), map[string]interface{}{"Email": userID, "Ativo": true}, conn)
 		//		foundUser := (*foundUsers)[0]
 		token, err := ValidateSession(conn, tokenString, token, *foundUser)
 
