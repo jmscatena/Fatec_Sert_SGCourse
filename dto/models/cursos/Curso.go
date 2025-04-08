@@ -3,7 +3,6 @@ package cursos
 import (
 	"errors"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type Periodo string
@@ -72,25 +71,21 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 		return u, nil
 	}
 */
-func (u *Curso) Find(db *gorm.DB, param string, ID string) (*Curso, error) {
+func (u *Curso) Find(db *gorm.DB, params map[string]interface{}) (*Curso, error) {
 	var err error
-	if param == "Id=?" {
-		id, err := strconv.ParseUint(ID, 10, 64)
-		if err != nil {
-			return nil, errors.New("invalid ID format") // Handle parsing error
+	query := db.Model(&Curso{})
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
 		}
-		err = db.Debug().Model(Curso{}).Where(param, id).Take(u).Error
-	} else {
-		err = db.Debug().Model(Curso{}).Where(param, ID).Take(u).Error
 	}
-
+	err = query.Find(&u).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("Curso Inexistente")
+			return nil, errors.New("Usuario Inexistente")
 		}
 		return nil, err // Return the original error if it's not RecordNotFound
 	}
-
 	return u, nil
 }
 
