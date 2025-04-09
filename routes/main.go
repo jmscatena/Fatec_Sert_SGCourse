@@ -29,7 +29,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			userRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				params := map[string]interface{}{"id": ID, "ativo": true}
 				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 
@@ -38,12 +38,12 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			userRoute.GET("/admin/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
-				params := map[string]interface{}{"Diretor": true, "Ativo": true}
+				params := map[string]interface{}{"diretor": true, "ativo": true}
 				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 			userRoute.GET("/professors/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
-				params := map[string]interface{}{"Coordenador": true, "Professor": true, "Ativo": true}
+				params := map[string]interface{}{"coordenador": true, "professor": true, "ativo": true}
 				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 
@@ -65,7 +65,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			courseRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				params := map[string]interface{}{"id": ID, "ativo": true}
 				middleware.Get[curso.Curso](context, &course, params, conn)
 			})
 
@@ -98,7 +98,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			disciplineRoute.GET("/:id", func(context *gin.Context) {
 				ID := context.Param("id")
-				params := map[string]interface{}{"Id": ID, "Ativo": true}
+				params := map[string]interface{}{"id": ID, "ativo": true}
 				middleware.Get[curso.Disciplina](context, &discipline, params, conn)
 			})
 			disciplineRoute.PATCH("/:id", func(context *gin.Context) {

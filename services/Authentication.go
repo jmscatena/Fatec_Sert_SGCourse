@@ -74,13 +74,13 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		}*/
 		if user.Email != "" {
 
-			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Diretor": true, "Ativo": true}, conn)
+			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Diretor": true, "ativo": true}, conn)
 			if existUser != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 				c.Abort()
 				return
 			} else {
-				foundUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": user.Email, "Ativo": true}, conn)
+				foundUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": user.Email, "ativo": true}, conn)
 				if foundUser != nil {
 					c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
 					c.Abort()
@@ -135,7 +135,7 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}
 		password := json_map["code"].(string)
-		foundUser, err := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": json_map["email"].(string), "Ativo": true}, conn)
+		foundUser, err := Get[administrativo.Usuario](&user, map[string]interface{}{"email": json_map["email"].(string), "ativo": true}, conn)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
@@ -222,7 +222,7 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 			c.Abort()
 			return
 		}
-		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), map[string]interface{}{"Email": userID, "Ativo": true}, conn)
+		foundUser, err := Get[administrativo.Usuario](new(administrativo.Usuario), map[string]interface{}{"email": userID, "ativo": true}, conn)
 		//		foundUser := (*foundUsers)[0]
 		token, err := ValidateSession(conn, tokenString, token, *foundUser)
 
