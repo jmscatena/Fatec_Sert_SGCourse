@@ -21,6 +21,10 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 		{
 			signup.POST("/", services.Signup(conn, token))
 		}
+		logoutRoute := main.Group("logout", services.Authenticate(conn, token))
+		{
+			logoutRoute.POST("/", services.Logout(conn, token))
+		}
 		userRoute := main.Group("user", services.Authenticate(conn, token))
 		{
 			var user administrativo.Usuario

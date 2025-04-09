@@ -177,12 +177,12 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 
 	}
 }
-func Logout(conn config.Connection) gin.HandlerFunc {
+func Logout(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		userID := c.Request.Header.Get("ID")
 		if authHeader == "" || userID == "" {
-			c.Redirect(http.StatusFound, "/login")
+			c.JSON(http.StatusForbidden, gin.H{"error": "Invalid authorization header format"})
 		}
 		// Split the header value into "Bearer " and the token
 		tokenParts := strings.Split(authHeader, " ")
