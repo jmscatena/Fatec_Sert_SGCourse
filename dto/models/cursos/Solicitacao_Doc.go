@@ -52,7 +52,7 @@ func (p *Solicitacao_Doc) Update(db *gorm.DB, ID uint) (*Solicitacao_Doc, error)
 
 func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	Solicitacao_Docs := []Solicitacao_Doc{}
-	err := db.Debug().Model(&Solicitacao_Doc{}).Limit(100).Find(&Solicitacao_Docs).Error
+	err := db.Debug().Model(&Solicitacao_Doc{}).Limit(100).Preload("Disciplina").Preload("Documento").Find(&Solicitacao_Docs).Error
 	//result := db.Find(&Solicitacao_Docs)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 }
 
 func (u *Solicitacao_Doc) Find(db *gorm.DB, param string, ID uint) (*Solicitacao_Doc, error) {
-	err := db.Debug().Model(Solicitacao_Doc{}).Where(param, ID).Take(&u).Error
+	err := db.Debug().Model(Solicitacao_Doc{}).Where(param, ID).Preload("Disciplina").Preload("Documento").Take(&u).Error
 	if err != nil {
 		return &Solicitacao_Doc{}, err
 	}

@@ -59,14 +59,16 @@ func (p *Entrega_Doc) List(db *gorm.DB) (*[]Entrega_Doc, error) {
 	Entrega_Docs := []Entrega_Doc{}
 	//err := db.Debug().Model(&Entrega_Doc{}).Limit(100).Find(&Entrega_Docs).Error
 	//result := db.Find(&Entrega_Docs)
-	err := db.Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Find(&Entrega_Docs).Error
+	//err := db.Model(&Entrega_Doc{}).Preload("Materiais").Find(&Entrega_Docs).Error
+	err := db.Debug().Preload("Curso").Preload("Solicitacao").Find(&Entrega_Docs).Error
+
 	if err != nil {
 		return nil, err
 	}
 	return &Entrega_Docs, nil
 }
 func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint) (*Entrega_Doc, error) {
-	err := db.Debug().Model(Entrega_Doc{}).Where(param, id).Take(&u).Error
+	err := db.Debug().Model(Entrega_Doc{}).Where(param, id).Preload("Solicitacao").Take(&u).Error
 	if err != nil {
 		return &Entrega_Doc{}, err
 	}

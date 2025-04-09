@@ -103,7 +103,7 @@ func (u *Disciplina) Find(db *gorm.DB, params map[string]interface{}) (*Discipli
 			query = query.Where(key, value)
 		}
 	}
-	err = query.Find(&u).First(&u).Error
+	err = query.Preload("Curso").Preload("Usuario").Find(&u).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Usuario Inexistente")

@@ -64,7 +64,7 @@ func (p *Gestao) Update(db *gorm.DB, id uint) (*Gestao, error) {
 }
 func (p *Gestao) List(db *gorm.DB) (*[]Gestao, error) {
 	Gestaos := []Gestao{}
-	err := db.Debug().Model(&Gestao{}).Limit(100).Find(&Gestaos).Error
+	err := db.Debug().Model(&Gestao{}).Limit(100).Preload("Disciplina").Find(&Gestaos).Error
 	//result := db.Find(&Gestaos)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (p *Gestao) List(db *gorm.DB) (*[]Gestao, error) {
 }
 
 func (u *Gestao) Find(db *gorm.DB, param string, ID uint) (*Gestao, error) {
-	err := db.Debug().Model(Gestao{}).Where(param, ID).Take(&u).Error
+	err := db.Debug().Model(Gestao{}).Where(param, ID).Preload("Disciplina").Take(&u).Error
 	if err != nil {
 		return &Gestao{}, err
 	}
