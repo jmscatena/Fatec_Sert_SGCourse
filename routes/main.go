@@ -122,14 +122,35 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.GetAll[curso.Disciplina](context, &disciplines, conn)
 			})
 		}
+		docRoute := main.Group("document", services.Authenticate(conn, token))
+		{
+			var document curso.Documento
+			docRoute.POST("/", func(context *gin.Context) {
+				middleware.Add[curso.Documento](context, &document, conn)
+			})
+			docRoute.GET("/:id", func(context *gin.Context) {
+				ID := context.Param("id")
+				params := map[string]interface{}{"id": ID, "ativo": true}
+				middleware.Get[curso.Documento](context, &document, params, conn)
+			})
+			docRoute.PATCH("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Modify[curso.Documento](context, &document, uint(ID), conn)
+			})
+			docRoute.DELETE("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Erase[curso.Documento](context, &document, uint(ID), conn)
+			})
+
+		}
+
 		docsRoute := main.Group("documents", services.Authenticate(conn, token))
 		{
 			var docs curso.Documento
-			disciplinesRoute.GET("/", func(context *gin.Context) {
+			docsRoute.GET("/", func(context *gin.Context) {
 				middleware.GetAll[curso.Documento](context, &docs, conn)
 			})
 		}
-
 	}
 	/*
 		matRoute := main.Group("materiais", services.Authenticate(conn, token))
