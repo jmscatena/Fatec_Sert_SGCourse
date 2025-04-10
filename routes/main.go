@@ -122,6 +122,14 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.GetAll[curso.Disciplina](context, &disciplines, conn)
 			})
 		}
+		docsRoute := main.Group("documents", services.Authenticate(conn, token))
+		{
+			var docs curso.Documento
+			disciplinesRoute.GET("/", func(context *gin.Context) {
+				middleware.GetAll[curso.Documento](context, &docs, conn)
+			})
+		}
+
 	}
 	/*
 		matRoute := main.Group("materiais", services.Authenticate(conn, token))

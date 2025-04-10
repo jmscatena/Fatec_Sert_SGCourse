@@ -62,13 +62,20 @@ func (p *Documento) List(db *gorm.DB) (*[]Documento, error) {
 	return &Documentos, nil
 }
 
-func (u *Documento) Find(db *gorm.DB, param string, ID uint) (*Documento, error) {
-	err := db.Debug().Model(Documento{}).Where(param, ID).Take(&u).Error
-	if err != nil {
-		return &Documento{}, err
+func (u *Documento) Find(db *gorm.DB, params map[string]interface{}) (*Documento, error) {
+	var err error
+	query := db.Model(&Documento{})
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
+		}
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Documento{}, errors.New("Documento Inexistente")
+	err = query.Find(&u).First(&u).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Documento Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
 	}
 	return u, nil
 }
