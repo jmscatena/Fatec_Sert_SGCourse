@@ -7,7 +7,8 @@ import (
 )
 
 type Tables interface {
-	administrativo.Usuario | cursos.Curso | cursos.Disciplina | cursos.Gestao
+	administrativo.Usuario | cursos.Curso | cursos.Disciplina | cursos.Gestao | cursos.Documento |
+		cursos.Entrega_Doc | cursos.Solicitacao_Doc
 }
 
 type PersistenceHandler[T Tables] interface {
