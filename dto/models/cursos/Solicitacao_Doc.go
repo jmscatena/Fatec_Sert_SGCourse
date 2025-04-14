@@ -60,13 +60,20 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	return &Solicitacao_Docs, nil
 }
 
-func (u *Solicitacao_Doc) Find(db *gorm.DB, param string, ID uint) (*Solicitacao_Doc, error) {
-	err := db.Debug().Model(Solicitacao_Doc{}).Where(param, ID).Preload("Disciplina").Preload("Documento").Take(&u).Error
-	if err != nil {
-		return &Solicitacao_Doc{}, err
+func (u *Solicitacao_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Solicitacao_Doc, error) {
+	var err error
+	query := db.Model(&Solicitacao_Doc{})
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
+		}
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Solicitacao_Doc{}, errors.New("Gestao Material Inexistente")
+	err = query.Find(&u).First(&u).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Solicitação de Documento Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
 	}
 	return u, nil
 }
