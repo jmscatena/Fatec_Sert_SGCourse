@@ -16,7 +16,7 @@ type Usuario struct {
 	Nome        string `gorm:"size:255;not null;unique" json:"nome"`
 	Email       string `gorm:"unique;size:100;not null,email;" json:"email"`
 	Senha       string `gorm:"size:1024;not null;" json:"senha"`
-	Ativo       bool   `gorm:"default:True;" json:"ativo"`
+	Ativo       bool   `gorm:"default:true;" json:"ativo"`
 	Diretor     bool   `gorm:"default:false" json:"diretor"`
 	Coordenador bool   `gorm:"default:false" json:"coordenador"`
 	Professor   bool   `gorm:"default:false" json:"professor"`
@@ -35,11 +35,9 @@ func (u *Usuario) Create(db *gorm.DB) (uint, error) {
 }
 
 func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
-
 	if verr := u.Validate("insert"); verr != nil {
 		println(verr)
 		return nil, verr
-
 	}
 	u.Prepare()
 	db = db.Model(Usuario{}).Where("id = ?", ID).Updates(Usuario{
@@ -68,47 +66,14 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 
 func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	Usuarios := []Usuario{}
-	err := db.Debug().Model(&Usuario{}).Limit(100).Find(&Usuarios).Error
+	err := db.Debug().Model(&Usuario{}).Find(&Usuarios).Error
 	if err != nil {
 		return nil, err
 	}
 	return &Usuarios, err
 }
 
-/*
-func (u *Usuario) Find(db *gorm.DB, ID uint) (*Usuario, error) {
-
-	err := db.Debug().Model(Usuario{}).Where("id = ?", ID).Take(&u).Error
-	if err != nil {
-		return &Usuario{}, err
-	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return &Usuario{}, errors.New("Usuario Inexistente")
-	}
-	return u, err
-}
-*/
-
 func (u *Usuario) Find(db *gorm.DB, params map[string]interface{}) (*Usuario, error) {
-	/*	var err error
-		if param == "Id=?" {
-			id, err := strconv.ParseUint(ID, 10, 64)
-			if err != nil {
-				return nil, errors.New("invalid ID format") // Handle parsing error
-			}
-			err = db.Debug().Model(Usuario{}).Where(param, id).Take(u).Error
-		} else {
-			err = db.Debug().Model(Usuario{}).Where(param, ID).Take(u).Error
-		}
-
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, errors.New("Usuario Inexistente")
-			}
-			return nil, err // Return the original error if it's not RecordNotFound
-		}
-		return u, nil
-	*/
 	var err error
 	query := db.Model(&Usuario{})
 	if params != nil {
@@ -143,16 +108,20 @@ func (u *Usuario) DeleteBy(db *gorm.DB, cond string, ID interface{}) (int64, err
 }
 
 func (u *Usuario) Validate(action string) error {
-	if u.Nome == "" || u.Nome == "null" {
-		return errors.New("obrigatório: nome do usuário")
-	}
-	if u.Email == "" || u.Email == "null" {
-		return errors.New("obrigatório: email")
-	}
-	if u.Senha == "" || u.Senha == "null" {
-		return errors.New("obrigatório: senha")
-	}
+	/*
+		if u.Nome == "" {
+			return errors.New("obrigatório: nome do usuário")
+		}
+		if u.Email == "" {
+			return errors.New("obrigatório: email")
+		}
+		if u.Senha == "" {
+			return errors.New("obrigatório: senha")
+		}
+		return nil
+	*/
 	return nil
+
 }
 
 func Hash(Senha string) []byte {
@@ -167,6 +136,7 @@ func VerifyPassword(hashedSenha string, senha string) error {
 func (u *Usuario) Prepare() {
 	u.Nome = html.EscapeString(strings.TrimSpace(u.Nome))
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
+
 	u.Senha = string(Hash(u.Senha))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()

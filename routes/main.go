@@ -37,9 +37,6 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.Get[administrativo.Usuario](context, &user, params, conn)
 			})
 
-			userRoute.GET("/", func(context *gin.Context) {
-				middleware.GetAll[administrativo.Usuario](context, &user, conn)
-			})
 			userRoute.GET("/admin/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
 				params := map[string]interface{}{"diretor": true, "ativo": true}
@@ -58,6 +55,14 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			userRoute.DELETE("/:id", func(context *gin.Context) {
 				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
 				middleware.Erase[administrativo.Usuario](context, &user, uint(ID), conn)
+			})
+
+		}
+		usersRoute := main.Group("users", services.Authenticate(conn, token))
+		{
+			var usuario administrativo.Usuario
+			usersRoute.GET("/", func(context *gin.Context) {
+				middleware.GetAll[administrativo.Usuario](context, &usuario, conn)
 			})
 
 		}
