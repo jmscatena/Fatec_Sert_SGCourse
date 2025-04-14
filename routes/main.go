@@ -148,7 +148,6 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 
 		}
-
 		docsRoute := main.Group("documents", services.Authenticate(conn, token))
 		{
 			var docs curso.Documento
@@ -156,7 +155,36 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.GetAll[curso.Documento](context, &docs, conn)
 			})
 		}
+		requisitionRoute := main.Group("requisition", services.Authenticate(conn, token))
+		{
+			var requisition curso.Solicitacao_Doc
+			requisitionRoute.POST("/", func(context *gin.Context) {
+				middleware.Add[curso.Solicitacao_Doc](context, &requisition, conn)
+			})
+			requisitionRoute.GET("/:id", func(context *gin.Context) {
+				ID := context.Param("id")
+				params := map[string]interface{}{"id": ID, "ativo": true}
+				middleware.Get[curso.Solicitacao_Doc](context, &requisition, params, conn)
+			})
+			requisitionRoute.PATCH("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Modify[curso.Solicitacao_Doc](context, &requisition, uint(ID), conn)
+			})
+			requisitionRoute.DELETE("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Erase[curso.Solicitacao_Doc](context, &requisition, uint(ID), conn)
+			})
+
+		}
+		requisitionsRoute := main.Group("requisitions", services.Authenticate(conn, token))
+		{
+			var reqs curso.Solicitacao_Doc
+			requisitionsRoute.GET("/", func(context *gin.Context) {
+				middleware.GetAll[curso.Solicitacao_Doc](context, &reqs, conn)
+			})
+		}
 	}
+
 	/*
 		matRoute := main.Group("materiais", services.Authenticate(conn, token))
 		{
