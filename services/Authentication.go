@@ -59,7 +59,6 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		/*validationErr := validate.Struct(user)
 		if validationErr != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Authorization"})
@@ -73,18 +72,21 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			return
 		}*/
 		if user.Email != "" {
-
-			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Diretor": true, "ativo": true}, conn)
-			if existUser != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
-				c.Abort()
-				return
-			} else {
-				foundUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"Email": user.Email, "ativo": true}, conn)
-				if foundUser != nil {
-					c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"diretor": true, "ativo": true}, conn)
+			if existUser == nil {
+				existUser, _ = Get[administrativo.Usuario](&user, map[string]interface{}{"coordenador": true, "ativo": true}, conn)
+				fmt.Println(existUser)
+				if existUser != nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 					c.Abort()
 					return
+				} else {
+					foundUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"email": user.Email, "ativo": true}, conn)
+					if foundUser != nil {
+						c.JSON(http.StatusConflict, gin.H{"error": "User Registred"})
+						c.Abort()
+						return
+					}
 				}
 			}
 		} else {
@@ -118,6 +120,25 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		c.Next()
 	}
 
+}
+func SignupStatus(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var user administrativo.Usuario
+		existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"diretor": true, "ativo": true}, conn)
+		if existUser == nil {
+			existUser, _ = Get[administrativo.Usuario](&user, map[string]interface{}{"coordenador": true, "ativo": true}, conn)
+			fmt.Println(existUser)
+			if existUser != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
+				c.Abort()
+				return
+			} else {
+				c.JSON(http.StatusAccepted, gin.H{"data": "Accept !!!"})
+				c.Abort()
+				return
+			}
+		}
+	}
 }
 func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -14,7 +14,7 @@ type Usuario struct {
 	gorm.Model
 	ID          uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome        string `gorm:"size:255;not null;unique" json:"nome"`
-	Email       string `gorm:"unique;size:100;not null,email;" json:"email"`
+	Email       string `gorm:"unique;size:100;not null;" json:"email"`
 	Senha       string `gorm:"size:1024;not null;" json:"senha"`
 	Ativo       bool   `gorm:"default:true;" json:"ativo"`
 	Diretor     bool   `gorm:"default:false" json:"diretor"`
@@ -136,7 +136,6 @@ func VerifyPassword(hashedSenha string, senha string) error {
 func (u *Usuario) Prepare() {
 	u.Nome = html.EscapeString(strings.TrimSpace(u.Nome))
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
-
 	u.Senha = string(Hash(u.Senha))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()

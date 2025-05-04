@@ -13,6 +13,11 @@ import (
 func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.SecretsToken) *gin.Engine {
 	main := router.Group("/")
 	{
+		signupstatus := main.Group("status")
+		{
+			signupstatus.POST("/", services.SignupStatus(conn, token))
+		}
+
 		login := main.Group("login")
 		{
 			login.POST("/", services.Login(conn, token))
