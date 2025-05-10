@@ -15,7 +15,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 	{
 		signupstatus := main.Group("status")
 		{
-			signupstatus.POST("/", services.SignupStatus(conn, token))
+			signupstatus.POST("/", services.SignupStatus(conn))
 		}
 
 		login := main.Group("login")
@@ -164,6 +164,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 		{
 			var requisition curso.Solicitacao_Doc
 			requisitionRoute.POST("/", func(context *gin.Context) {
+
 				middleware.Add[curso.Solicitacao_Doc](context, &requisition, conn)
 			})
 			requisitionRoute.GET("/:id", func(context *gin.Context) {

@@ -3,7 +3,6 @@ package cursos
 import (
 	"errors"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Tipo string
@@ -16,12 +15,10 @@ const (
 
 type Documento struct {
 	gorm.Model
-	ID        uint      `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Titulo    string    `gorm:"size:255;not null;" json:"titulo"`
-	Tipo      Tipo      `json:"tipo" validate:"required"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
-	Ativo     bool      `gorm:"default:True;" json:"ativo"`
+	ID     uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Titulo string `gorm:"size:255;not null;" json:"titulo"`
+	Tipo   Tipo   `json:"tipo" validate:"required"`
+	Ativo  bool   `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Documento) Validate() error {

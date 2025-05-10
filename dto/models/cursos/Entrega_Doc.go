@@ -3,7 +3,6 @@ package cursos
 import (
 	"errors"
 	"gorm.io/gorm"
-	"time"
 )
 
 type Entrega_Doc struct {
@@ -12,8 +11,6 @@ type Entrega_Doc struct {
 	ID            uint            `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Solicitacao   Solicitacao_Doc `json:"solicitacao"`
 	Arquivo       string          `gorm:"type:text" json:"arquivo"`
-	CreatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt     time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Entrega_Doc) Validate() error {
@@ -22,8 +19,6 @@ func (p *Entrega_Doc) Validate() error {
 func (p *Entrega_Doc) Prepare(db *gorm.DB) (err error) {
 	p.Solicitacao = p.Solicitacao
 	p.Arquivo = p.Arquivo
-	p.CreatedAt = time.Now()
-	p.UpdatedAt = time.Now()
 	return
 }
 
@@ -47,7 +42,6 @@ func (p *Entrega_Doc) Update(db *gorm.DB, id uint) (*Entrega_Doc, error) {
 		Entrega_Doc{
 			Solicitacao: p.Solicitacao,
 			Arquivo:     p.Arquivo,
-			UpdatedAt:   time.Now(),
 		})
 	if db.Error != nil {
 		return &Entrega_Doc{}, db.Error

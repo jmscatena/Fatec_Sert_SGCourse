@@ -16,8 +16,6 @@ type Gestao struct {
 	Arquivo      string     `gorm:"type:text" json:"arquivo"`
 	DisciplinaID uint       `json:"disciplinaID"`
 	Disciplina   Disciplina `json:"disciplina"`
-	CreatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (p *Gestao) Validate() error {

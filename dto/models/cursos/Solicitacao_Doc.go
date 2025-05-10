@@ -2,36 +2,90 @@ package cursos
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Solicitacao_Doc struct {
-	// Esta faltando os materiais
 	gorm.Model
 	DocumentoID  uint       `json:"documentoID"`
 	DisciplinaID uint       `json:"disciplinaID"`
+	CursoID      uint       `json:"cursoID"`
+	SemestreID   uint       `json:"semestreID"`
 	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Documento    Documento  `json:"documento"`
 	Disciplina   Disciplina `json:"disciplina"`
-	Entrega      bool       `gorm:"size:255;not null;unique" json:"entrega"`
-	Prazo        time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"prazo"`
+	Entrega      bool       `gorm:"default:false;not null" json:"entrega"`
+	Prazo        time.Time  `gorm:"column:prazo;type:date;not null" json:"prazo,omitempty" time_format:"2006-01-02" example:"2006-01-02"`
 	Ativo        bool       `gorm:"default:True;" json:"ativo"`
-	CreatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt    time.Time  `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+}
+
+func (p *Solicitacao_Doc) Prepare() (err error) {
+	if !p.Ativo {
+		p.Ativo = true
+	}
+	p.UpdatedAt = time.Now()
+	if !p.Prazo.IsZero() {
+		prazoStr := p.Prazo.Format("2006-01-02")
+		parsedTime, err := time.Parse("2006-01-02", prazoStr)
+		if err != nil {
+			return errors.New("invalid date format for Prazo, expected YYYY-MM-DD")
+		}
+		p.Prazo = parsedTime
+	}
+	return
 }
 
 func (p *Solicitacao_Doc) Validate() error {
+	if p.DocumentoID == 0 {
+		return errors.New("DocumentoID is required")
+	}
 	return nil
 }
 
 func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
+
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
-	err := db.Debug().Omit("ID").Create(&p).Error
+	perr := p.Prepare()
+	if perr != nil {
+		return 0, perr
+	}
+	fmt.Println(p.DisciplinaID)
+	disciplinas := []Disciplina{}
+	var err error
+	query := db.Debug().Model(&Disciplina{})
+
+	if p.CursoID == 0 {
+		if p.SemestreID > 0 {
+			query = query.Where("semestre = ?", p.SemestreID)
+		}
+	} else if p.CursoID > 0 {
+		query = query.Where("curso_id = ?", p.CursoID)
+		if p.SemestreID > 0 {
+			query = query.Where("semestre = ?", p.SemestreID)
+
+			if p.DisciplinaID > 0 {
+				query = query.Where("id = ?", p.DisciplinaID)
+			}
+		}
+	}
+
+	err = query.Preload("Curso").Preload("Usuario").Find(&disciplinas).Error
 	if err != nil {
 		return 0, err
+	}
+	fmt.Println(disciplinas)
+
+	for _, disciplina := range disciplinas {
+		p.DisciplinaID = disciplina.ID
+		newSolicitation := *p
+		err := db.Debug().Model(&Solicitacao_Doc{}).Omit("ID").Create(&newSolicitation).Error
+		if err != nil {
+			return 0, err
+		}
 	}
 	return p.ID, nil
 }
@@ -52,8 +106,13 @@ func (p *Solicitacao_Doc) Update(db *gorm.DB, ID uint) (*Solicitacao_Doc, error)
 
 func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	Solicitacao_Docs := []Solicitacao_Doc{}
-	err := db.Debug().Model(&Solicitacao_Doc{}).Limit(100).Preload("Disciplina").Preload("Documento").Find(&Solicitacao_Docs).Error
-	//result := db.Find(&Solicitacao_Docs)
+	err := db.Debug().
+		Model(&Solicitacao_Doc{}).
+		Limit(100).
+		Preload("Documento").
+		Preload("Disciplina.Curso").
+		Preload("Disciplina.Usuario").
+		Find(&Solicitacao_Docs).Error
 	if err != nil {
 		return nil, err
 	}
