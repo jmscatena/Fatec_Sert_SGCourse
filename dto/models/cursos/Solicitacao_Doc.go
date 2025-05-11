@@ -3,22 +3,25 @@ package cursos
 import (
 	"errors"
 	"fmt"
+	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Solicitacao_Doc struct {
 	gorm.Model
-	DocumentoID  uint       `json:"documentoID"`
-	DisciplinaID uint       `json:"disciplinaID"`
-	CursoID      uint       `json:"cursoID"`
-	SemestreID   uint       `json:"semestreID"`
-	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Documento    Documento  `json:"documento"`
-	Disciplina   Disciplina `json:"disciplina"`
-	Entrega      bool       `gorm:"default:false;not null" json:"entrega"`
-	Prazo        time.Time  `gorm:"column:prazo;type:date;not null" json:"prazo,omitempty" time_format:"2006-01-02" example:"2006-01-02"`
-	Ativo        bool       `gorm:"default:True;" json:"ativo"`
+	DocumentoID  uint                   `json:"documentoID"`
+	DisciplinaID uint                   `json:"disciplinaID"`
+	CursoID      uint                   `json:"cursoID"`
+	SemestreID   uint                   `json:"semestreID"`
+	ProfessorID  uint                   `json:"professorID"`
+	ID           uint                   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Professor    administrativo.Usuario `json:"professor"`
+	Documento    Documento              `json:"documento"`
+	Disciplina   Disciplina             `json:"disciplina"`
+	Entrega      bool                   `gorm:"default:false;not null" json:"entrega"`
+	Prazo        time.Time              `gorm:"column:prazo;type:date;not null" json:"prazo,omitempty" time_format:"2006-01-02" example:"2006-01-02"`
+	Ativo        bool                   `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Solicitacao_Doc) Prepare() (err error) {
@@ -81,6 +84,7 @@ func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 
 	for _, disciplina := range disciplinas {
 		p.DisciplinaID = disciplina.ID
+		p.ProfessorID = disciplina.Usuario.ID
 		newSolicitation := *p
 		err := db.Debug().Model(&Solicitacao_Doc{}).Omit("ID").Create(&newSolicitation).Error
 		if err != nil {
@@ -109,7 +113,7 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	err := db.Debug().
 		Model(&Solicitacao_Doc{}).
 		Limit(100).
-		Preload("Documento").
+		Preload("Professor").
 		Preload("Disciplina.Curso").
 		Preload("Disciplina.Usuario").
 		Find(&Solicitacao_Docs).Error
