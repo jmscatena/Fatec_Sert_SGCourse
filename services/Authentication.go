@@ -101,21 +101,19 @@ func Login(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 		}
 
 		if err != nil {
-			//c.ShouldBindJSON(&json_map);
 			c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
 			return
 		}
 		password := jsonMap["code"].(string)
 		foundUser, err := Get[administrativo.Usuario](&user, map[string]interface{}{"email": jsonMap["email"].(string), "ativo": true}, conn)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
 			return
 		}
-		//foundUser := (*foundUsers)[0]
-		err = administrativo.VerifyPassword(foundUser.Senha, password)
+		err = administrativo.VerifyPassword(conn.Db, foundUser.ID, password)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "email or password is incorrect"})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "email or password is incorrect"})
 			c.Abort()
 			return
 		}
@@ -210,7 +208,6 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 		token, err := ValidateSession(conn, tokenString, token, *foundUser)
 
 		// Store the user ID in the request context
-		//c.JSON(http.StatusOK, gin.H{"data": foundUser.ID, "token": token})
 		c.Set("id", foundUser.ID)
 		c.Set("data", token)
 
@@ -221,7 +218,6 @@ func Authenticate(conn config.Connection, token config.SecretsToken) gin.Handler
 }
 func ValidateSession(conn config.Connection, tokenString string, token config.SecretsToken,
 	user administrativo.Usuario) (string, error) {
-
 	if conn.NoSql != nil {
 		return "", fmt.Errorf("error Database access token")
 	}
@@ -256,6 +252,5 @@ func ValidateSession(conn config.Connection, tokenString string, token config.Se
 			return "", fmt.Errorf("error validate session %w", err)
 		}
 	}
-	//defer conn.NoSql.Close()
 	return tokenString, nil
 }

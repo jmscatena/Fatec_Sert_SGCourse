@@ -2,6 +2,7 @@ package administrativo
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -45,19 +46,11 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 		Nome:  u.Nome,
 		Email: u.Email,
 	})
-
-	/*db = db.Debug().Model(&Usuario{}).Where("id = ?", ID).Take(&Usuario{}).UpdateColumns(
-		map[string]interface{}{
-			"Senha": u.Senha,
-			"Nome":  u.Nome,
-			"Email": u.Email,
-			//"updated_at": time.Now(),
-		},
-	)*/
 	if db.Error != nil {
 		return &Usuario{}, db.Error
 	}
-	err := db.Debug().Model(&Usuario{}).Where("id = ?", ID).Take(&u).Error
+	err := db.Debug().
+		Model(&Usuario{}).Where("id = ?", ID).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
 	}
@@ -66,7 +59,11 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 
 func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	Usuarios := []Usuario{}
-	err := db.Debug().Model(&Usuario{}).Find(&Usuarios).Error
+	err := db.Debug().
+		Model(&Usuario{}).
+		Select("id, nome, email, ativo, diretor, coordenador, professor, created_at, updated_at").
+		Find(&Usuarios).Error
+	fmt.Println(Usuarios)
 	if err != nil {
 		return nil, err
 	}
@@ -75,20 +72,21 @@ func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 
 func (u *Usuario) Find(db *gorm.DB, params map[string]interface{}) (*Usuario, error) {
 	var err error
-	query := db.Model(&Usuario{})
+	result := &Usuario{}
+	query := db.Model(&Usuario{}).Select("id, nome, email, ativo, diretor, coordenador, professor")
 	if params != nil {
 		for key, value := range params {
 			query = query.Where(key, value)
 		}
 	}
-	err = query.Find(&u).First(&u).Error
+	err = query.First(result).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Usuario Inexistente")
 		}
-		return nil, err // Return the original error if it's not RecordNotFound
+		return nil, err
 	}
-	return u, nil
+	return result, nil
 }
 
 func (u *Usuario) Delete(db *gorm.DB, ID uint) (int64, error) {
@@ -129,8 +127,16 @@ func Hash(Senha string) []byte {
 	return hash
 }
 
-func VerifyPassword(hashedSenha string, senha string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedSenha), []byte(senha))
+func VerifyPassword(db *gorm.DB, ID uint, senha string) error {
+	result := &Usuario{}
+	query := db.Model(&Usuario{}).Where("id=?", ID)
+	err := query.First(result).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("Usuario Inexistente")
+		}
+	}
+	return bcrypt.CompareHashAndPassword([]byte(result.Senha), []byte(senha))
 }
 
 func (u *Usuario) Prepare() {

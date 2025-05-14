@@ -13,6 +13,32 @@ import (
 func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.SecretsToken) *gin.Engine {
 	main := router.Group("/")
 	{
+		main.GET("/", services.Authenticate(conn, token), func(context *gin.Context) {
+			var openSolicitations curso.Solicitacao_Doc
+			var closedSolicitations curso.Solicitacao_Doc
+			var profUsers administrativo.Usuario
+
+			middleware.Get[curso.Solicitacao_Doc](context,
+				&closedSolicitations,
+				map[string]interface{}{"entrega": true, "ativo": true},
+				conn)
+			middleware.Get[curso.Solicitacao_Doc](context,
+				&openSolicitations,
+				map[string]interface{}{"entrega": false, "ativo": true},
+				conn)
+
+			middleware.Get[administrativo.Usuario](context,
+				&profUsers,
+				map[string]interface{}{"professor": true, "ativo": true},
+				conn)
+
+			context.JSON(200, gin.H{
+				"openSolicitations":   openSolicitations,
+				"closedSolicitations": closedSolicitations,
+				"professors":          profUsers,
+			})
+		})
+
 		signupstatus := main.Group("status")
 		{
 			signupstatus.POST("/", services.SignupStatus(conn))
