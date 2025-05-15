@@ -3,25 +3,22 @@ package cursos
 import (
 	"errors"
 	"fmt"
-	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
 	"gorm.io/gorm"
 	"time"
 )
 
 type Solicitacao_Doc struct {
 	gorm.Model
-	DocumentoID  uint                   `json:"documentoID"`
-	DisciplinaID uint                   `json:"disciplinaID"`
-	CursoID      uint                   `json:"cursoID"`
-	SemestreID   uint                   `json:"semestreID"`
-	ProfessorID  uint                   `json:"professorID"`
-	ID           uint                   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Professor    administrativo.Usuario `json:"professor"`
-	Documento    Documento              `json:"documento"`
-	Disciplina   Disciplina             `json:"disciplina"`
-	Entrega      bool                   `gorm:"default:false;not null" json:"entrega"`
-	Prazo        time.Time              `gorm:"column:prazo;type:date;not null" json:"prazo,omitempty" time_format:"2006-01-02" example:"2006-01-02"`
-	Ativo        bool                   `gorm:"default:True;" json:"ativo"`
+	DocumentoID  uint       `json:"documentoID"`
+	DisciplinaID uint       `json:"disciplinaID"`
+	CursoID      uint       `json:"cursoID"`
+	SemestreID   uint       `json:"semestreID"`
+	ID           uint       `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Documento    Documento  `json:"documento"`
+	Disciplina   Disciplina `json:"disciplina"`
+	Entrega      bool       `gorm:"default:false;not null" json:"entrega"`
+	Prazo        time.Time  `gorm:"column:prazo;type:date;not null" json:"prazo,omitempty" time_format:"2006-01-02" example:"2006-01-02"`
+	Ativo        bool       `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Solicitacao_Doc) Prepare() (err error) {
@@ -40,23 +37,36 @@ func (p *Solicitacao_Doc) Prepare() (err error) {
 	return
 }
 
-func (p *Solicitacao_Doc) Validate() error {
+func (p *Solicitacao_Doc) Validate(db *gorm.DB) error {
 	if p.DocumentoID == 0 {
 		return errors.New("DocumentoID is required")
+	}
+	var err error
+	solicitacaoDocs := []Solicitacao_Doc{}
+	query := db.Model(&Solicitacao_Doc{}).
+		Where("documento_id = ?", p.DocumentoID).
+		Where("disciplina_id = ?", p.DisciplinaID).
+		Where("curso_id = ?", p.CursoID).
+		Where("semestre_id = ?", p.SemestreID)
+	err = query.Find(&solicitacaoDocs).Error
+	if err != nil {
+		return err
+	}
+	if len(solicitacaoDocs) > 0 {
+		return errors.New("documento já solicitado para esta disciplina")
 	}
 	return nil
 }
 
 func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 
-	if verr := p.Validate(); verr != nil {
+	if verr := p.Validate(db); verr != nil {
 		return 0, verr
 	}
 	perr := p.Prepare()
 	if perr != nil {
 		return 0, perr
 	}
-	fmt.Println(p.DisciplinaID)
 	disciplinas := []Disciplina{}
 	var err error
 	query := db.Debug().Model(&Disciplina{})
@@ -84,7 +94,6 @@ func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 
 	for _, disciplina := range disciplinas {
 		p.DisciplinaID = disciplina.ID
-		p.ProfessorID = disciplina.Usuario.ID
 		newSolicitation := *p
 		err := db.Debug().Model(&Solicitacao_Doc{}).Omit("ID").Create(&newSolicitation).Error
 		if err != nil {
@@ -110,17 +119,23 @@ func (p *Solicitacao_Doc) Update(db *gorm.DB, ID uint) (*Solicitacao_Doc, error)
 
 func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	Solicitacao_Docs := []Solicitacao_Doc{}
+	//[]Solicitacao_Doc{}
 	err := db.Debug().
 		Model(&Solicitacao_Doc{}).
 		Limit(100).
-		Preload("Professor").
-		Preload("Disciplina.Curso").
-		Preload("Disciplina.Usuario").
+		Preload("Documento", func(db *gorm.DB) *gorm.DB { return db.Select("id,titulo,tipo") }).
+		Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
+		Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome,periodo") }).
+		Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo").
+		Omit("CreatedAt", "UpdatedAt", "DeletedAt").
 		Find(&Solicitacao_Docs).Error
+	fmt.Println(Solicitacao_Docs[0])
 	if err != nil {
 		return nil, err
 	}
+
 	return &Solicitacao_Docs, nil
+
 }
 
 func (u *Solicitacao_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Solicitacao_Doc, error) {

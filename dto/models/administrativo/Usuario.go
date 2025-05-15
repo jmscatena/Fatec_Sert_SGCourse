@@ -13,14 +13,13 @@ import (
 
 type Usuario struct {
 	gorm.Model
-	ID          uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Nome        string `gorm:"size:255;not null;unique" json:"nome"`
-	Email       string `gorm:"unique;size:100;not null;" json:"email"`
-	Senha       string `gorm:"size:1024;not null;" json:"senha"`
+	Email       string `gorm:"unique;size:100;not null;omitempty" json:"email,omitempty"`
+	Senha       string `gorm:"size:1024;not null;omitempty" json:"senha,omitempty"`
 	Ativo       bool   `gorm:"default:true;" json:"ativo"`
-	Diretor     bool   `gorm:"default:false" json:"diretor"`
-	Coordenador bool   `gorm:"default:false" json:"coordenador"`
-	Professor   bool   `gorm:"default:false" json:"professor"`
+	Diretor     bool   `gorm:"default:false;omitempty" json:"diretor,omitempty"`
+	Coordenador bool   `gorm:"default:false;omitempty" json:"coordenador,omitempty"`
+	Professor   bool   `gorm:"default:false;omitempty" json:"professor,omitempty"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uint, error) {

@@ -73,7 +73,12 @@ func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
 func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	Disciplinas := []Disciplina{}
 	//err := db.Debug().Model(&Disciplina{}).Limit(100).Find(&Disciplinas).Error
-	err := db.Debug().Preload("Curso").Preload("Usuario").Find(&Disciplinas).Error
+	err := db.Debug().
+		Preload("Curso").
+		Preload("Usuario", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, nome").Omit("email", "professor", "coordenador", "diretor")
+		}).
+		Find(&Disciplinas).Error
 
 	//result := db.Find(&Disciplinas)
 	//err := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Find(&Disciplinas).Error
