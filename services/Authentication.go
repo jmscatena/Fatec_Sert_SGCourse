@@ -78,7 +78,8 @@ func SignupStatus(conn config.Connection) gin.HandlerFunc {
 		if existUser == nil {
 			existUser, _ = Get[administrativo.Usuario](&user, map[string]interface{}{"coordenador": true, "ativo": true}, conn)
 			fmt.Println(existUser)
-			if existUser != nil {
+			//Verificar a senha com o user
+			if existUser == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 				c.Abort()
 				return
