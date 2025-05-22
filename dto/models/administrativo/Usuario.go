@@ -20,6 +20,7 @@ type Usuario struct {
 	Diretor     bool   `gorm:"default:false;omitempty" json:"diretor,omitempty"`
 	Coordenador bool   `gorm:"default:false;omitempty" json:"coordenador,omitempty"`
 	Professor   bool   `gorm:"default:false;omitempty" json:"professor,omitempty"`
+	CursoID     uint   `gorm:"omitempty" json:"curso_id,omitempty"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uint, error) {
