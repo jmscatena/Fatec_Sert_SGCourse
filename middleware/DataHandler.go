@@ -109,3 +109,18 @@ func Get[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], pa
 		c.JSON(http.StatusOK, gin.H{"data": rec, "status": http.StatusText(http.StatusOK)})
 	}
 }
+
+func FindAll[T handlers.Tables](c *gin.Context, o handlers.PersistenceHandler[T], param map[string]interface{}, conn config.Connection) {
+	if reflect.TypeOf(o) != nil {
+		if len(param) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusText(http.StatusNotFound), "data": "No Data"})
+		}
+		var handler handlers.PersistenceHandler[T] = o
+		rec, cerr := services.FindAll(handler, param, conn)
+
+		if cerr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusText(http.StatusBadRequest), "data": cerr})
+		}
+		c.JSON(http.StatusOK, gin.H{"data": rec, "status": http.StatusText(http.StatusOK)})
+	}
+}

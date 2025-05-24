@@ -13,7 +13,6 @@ func RunMigrate(db *gorm.DB) {
 		&curso.Curso{},
 		&curso.Disciplina{},
 		&curso.Documento{},
-		&curso.Gestao{},
 		&curso.Solicitacao_Doc{},
 		&curso.Entrega_Doc{},
 	)

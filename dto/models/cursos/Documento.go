@@ -76,30 +76,11 @@ func (u *Documento) Find(db *gorm.DB, params map[string]interface{}) (*Documento
 	}
 	return u, nil
 }
+func (p *Documento) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Documento, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
-/*
-	func (p *Documento) Find(db *gorm.DB, id uint) (*Documento, error) {
-		err := db.Debug().Model(&Documento{}).Where("id = ?", id).Take(&p).Error
-		if err != nil {
-			return &Documento{}, err
-		}
-		return p, nil
-	}
-
-	func (p *Documento) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Documento, error) {
-		Documentos := []Documento{}
-		params := strings.Split(param, ";")
-		ids := id[0].([]interface{})
-		if len(params) != len(ids) {
-			return nil, errors.New("condição inválida")
-		}
-		result := db.Where(strings.Join(params, " AND "), ids...).Find(&Documentos)
-		if result.Error != nil {
-			return nil, result.Error
-		}
-		return &Documentos, nil
-	}
-*/
 func (p *Documento) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Documento{}, "id = ? ", id)
 	if db.Error != nil {

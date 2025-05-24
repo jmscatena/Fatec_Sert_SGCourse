@@ -22,6 +22,11 @@ type Curso struct {
 	Ativo   bool    `gorm:"default:True;" json:"ativo"`
 }
 
+func (p *Curso) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Curso, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (p *Curso) Validate() error {
 	return nil
 }

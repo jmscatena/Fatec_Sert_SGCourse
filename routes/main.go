@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/config"
 	"github.com/jmscatena/Fatec_Sert_SGCourse/dto/models/administrativo"
@@ -18,16 +19,16 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			var closedSolicitations curso.Solicitacao_Doc
 			var profUsers administrativo.Usuario
 
-			middleware.Get[curso.Solicitacao_Doc](context,
+			middleware.FindAll[curso.Solicitacao_Doc](context,
 				&closedSolicitations,
 				map[string]interface{}{"entrega": true, "ativo": true},
 				conn)
-			middleware.Get[curso.Solicitacao_Doc](context,
+			middleware.FindAll[curso.Solicitacao_Doc](context,
 				&openSolicitations,
 				map[string]interface{}{"entrega": false, "ativo": true},
 				conn)
 
-			middleware.Get[administrativo.Usuario](context,
+			middleware.FindAll[administrativo.Usuario](context,
 				&profUsers,
 				map[string]interface{}{"professor": true, "ativo": true},
 				conn)
@@ -196,6 +197,12 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				ID := context.Param("id")
 				params := map[string]interface{}{"id": ID, "ativo": true}
 				middleware.Get[curso.Solicitacao_Doc](context, &requisition, params, conn)
+			})
+			requisitionRoute.GET("/professor/", func(context *gin.Context) {
+				//ID := context.Param("email")
+				params := map[string]interface{}{"email": "jean.scatena@fatec.sp.gov.br", "ativo": true}
+				fmt.Println(params)
+				middleware.FindAll[curso.Solicitacao_Doc](context, &requisition, params, conn)
 			})
 			requisitionRoute.PATCH("/:id", func(context *gin.Context) {
 				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)

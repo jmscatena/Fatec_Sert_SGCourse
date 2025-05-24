@@ -71,31 +71,11 @@ func (u *Entrega_Doc) Find(db *gorm.DB, param string, id uint) (*Entrega_Doc, er
 	}
 	return u, nil
 }
+func (p *Entrega_Doc) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Entrega_Doc, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
-/*
-	func (p *Entrega_Doc) Find(db *gorm.DB, id uint) (*Entrega_Doc, error) {
-		err := db.Debug().Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
-		if err != nil {
-			return &Entrega_Doc{}, err
-		}
-		return p, nil
-	}
-
-	func (p *Entrega_Doc) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Entrega_Doc, error) {
-		Entrega_Docs := []Entrega_Doc{}
-		params := strings.Split(param, ";")
-		ids := id[0].([]interface{})
-		if len(params) != len(ids) {
-			return nil, errors.New("condição inválida")
-		}
-		result := db.Model(&Entrega_Doc{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), ids...).Find(&Entrega_Docs)
-		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), ids...)).Find(&Entrega_Docs)
-		if result.Error != nil {
-			return nil, result.Error
-		}
-		return &Entrega_Docs, nil
-	}
-*/
 func (p *Entrega_Doc) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Entrega_Doc{}, "id = ? ", id)
 	if db.Error != nil {

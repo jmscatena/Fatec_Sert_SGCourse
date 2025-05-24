@@ -88,18 +88,6 @@ func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	return &Disciplinas, nil
 }
 
-/*
-	func (u *Disciplina) Find(db *gorm.DB, param string, ID uint) (*Disciplina, error) {
-		err := db.Debug().Model(Disciplina{}).Where(param, ID).Take(&u).Error
-		if err != nil {
-			return &Disciplina{}, err
-		}
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return &Disciplina{}, errors.New("Laboratorio Inexistente")
-		}
-		return u, nil
-	}
-*/
 func (u *Disciplina) Find(db *gorm.DB, params map[string]interface{}) (*Disciplina, error) {
 	var err error
 	query := db.Model(&Curso{})
@@ -117,31 +105,11 @@ func (u *Disciplina) Find(db *gorm.DB, params map[string]interface{}) (*Discipli
 	}
 	return u, nil
 }
+func (p *Disciplina) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Disciplina, error) {
+	//TODO implement me
+	panic("implement me")
+}
 
-/*
-	func (p *Disciplina) Find(db *gorm.DB, id uint) (*Disciplina, error) {
-		err := db.Debug().Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where("id = ?", id).Take(&p).Error
-		if err != nil {
-			return &Disciplina{}, err
-		}
-		return p, nil
-	}
-
-	func (p *Disciplina) FindBy(db *gorm.DB, param string, id ...interface{}) (*[]Disciplina, error) {
-		Disciplinas := []Disciplina{}
-		params := strings.Split(param, ";")
-		ids := id[0].([]interface{})
-		if len(params) != len(ids) {
-			return nil, errors.New("condição inválida")
-		}
-		result := db.Model(&Disciplina{}).Preload("CreatedBy").Preload("UpdatedBy").Preload("Materiais").Where(strings.Join(params, " AND "), ids...).Find(&Disciplinas)
-		//result := db.Joins("CreatedBy", db.Where(strings.Join(params, " AND "), ids...)).Find(&Disciplinas)
-		if result.Error != nil {
-			return nil, result.Error
-		}
-		return &Disciplinas, nil
-	}
-*/
 func (p *Disciplina) Delete(db *gorm.DB, id uint) (int64, error) {
 	db = db.Delete(&Disciplina{}, "id = ? ", id)
 	if db.Error != nil {

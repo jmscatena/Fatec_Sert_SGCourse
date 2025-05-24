@@ -142,11 +142,28 @@ func (u *Solicitacao_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Sol
 	var err error
 	query := db.Model(&Solicitacao_Doc{})
 	if params != nil {
+		query = query.Preload("Documento", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id,titulo,tipo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+		}).
+			Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome").Omit("CreatedAt", "UpdatedAt", "DeletedAt") }).
+			Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB {
+				return db.Select("id,nome,periodo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+			}).
+			Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo")
 		for key, value := range params {
-			query = query.Where(key, value)
+			if key == "email" {
+				//query = query.Preload("Disciplina.Usuario").Where("disciplinas.usuario.email = ?", value)
+				query = query.Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome,email").Where("email = ?", value) })
+				//Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
+
+			} else {
+				query = query.Where(key, value)
+			}
+
 		}
 	}
-	err = query.Find(&u).First(&u).Error
+
+	err = query.Omit("CreatedAt", "UpdatedAt", "DeletedAt").Find(&u).First(&u).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Solicitação de Documento Inexistente")
@@ -154,6 +171,42 @@ func (u *Solicitacao_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Sol
 		return nil, err // Return the original error if it's not RecordNotFound
 	}
 	return u, nil
+}
+
+func (u *Solicitacao_Doc) FindAll(db *gorm.DB, params map[string]interface{}) (*[]Solicitacao_Doc, error) {
+	var err error
+	Solicitacao_Docs := []Solicitacao_Doc{}
+	query := db.Model(&Solicitacao_Doc{})
+	if params != nil {
+		query = query.Preload("Documento", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id,titulo,tipo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+		}).
+			Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome").Omit("CreatedAt", "UpdatedAt", "DeletedAt") }).
+			Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB {
+				return db.Select("id,nome,periodo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+			}).
+			Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo")
+		for key, value := range params {
+			if key == "email" {
+				//query = query.Preload("Disciplina.Usuario").Where("disciplinas.usuario.email = ?", value)
+				query = query.Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome,email").Where("email = ?", value) })
+				//Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
+
+			} else {
+				query = query.Where(key, value)
+			}
+
+		}
+	}
+
+	err = query.Omit("CreatedAt", "UpdatedAt", "DeletedAt").Find(&Solicitacao_Docs).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Solicitação de Documento Inexistente")
+		}
+		return nil, err // Return the original error if it's not RecordNotFound
+	}
+	return &Solicitacao_Docs, nil
 }
 
 func (p *Solicitacao_Doc) Delete(db *gorm.DB, ID uint) (int64, error) {

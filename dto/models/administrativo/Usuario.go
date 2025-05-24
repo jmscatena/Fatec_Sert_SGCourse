@@ -20,7 +20,7 @@ type Usuario struct {
 	Diretor     bool   `gorm:"default:false;omitempty" json:"diretor,omitempty"`
 	Coordenador bool   `gorm:"default:false;omitempty" json:"coordenador,omitempty"`
 	Professor   bool   `gorm:"default:false;omitempty" json:"professor,omitempty"`
-	CursoID     uint   `gorm:"omitempty" json:"curso_id,omitempty"`
+	CursoID     uint   `gorm:"default:0;omitempty" json:"curso_id,omitempty"`
 }
 
 func (u *Usuario) Create(db *gorm.DB) (uint, error) {
@@ -87,6 +87,24 @@ func (u *Usuario) Find(db *gorm.DB, params map[string]interface{}) (*Usuario, er
 		return nil, err
 	}
 	return result, nil
+}
+func (u *Usuario) FindAll(db *gorm.DB, params map[string]interface{}) (*[]Usuario, error) {
+	var err error
+	result := []Usuario{}
+	query := db.Model(&Usuario{}).Select("id, nome, email, ativo, diretor, coordenador, professor")
+	if params != nil {
+		for key, value := range params {
+			query = query.Where(key, value)
+		}
+	}
+	err = query.First(&result).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Usuario Inexistente")
+		}
+		return nil, err
+	}
+	return &result, nil
 }
 
 func (u *Usuario) Delete(db *gorm.DB, ID uint) (int64, error) {

@@ -90,3 +90,15 @@ func Get[T handlers.Tables](o handlers.PersistenceHandler[T], param map[string]i
 	}
 	return rec, nil
 }
+
+func FindAll[T handlers.Tables](o handlers.PersistenceHandler[T], param map[string]interface{}, conn config.Connection) (*[]T, error) {
+	if conn.Db == nil {
+		return nil, nil
+	}
+	rec, err := o.FindAll(conn.Db, param)
+	if err != nil {
+		//log.Fatalln(err)
+		return nil, err
+	}
+	return rec, nil
+}
