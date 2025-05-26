@@ -141,21 +141,19 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 func (u *Solicitacao_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Solicitacao_Doc, error) {
 	var err error
 	query := db.Model(&Solicitacao_Doc{})
-	if params != nil {
-		query = query.Preload("Documento", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id,titulo,tipo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+	query = query.Preload("Documento", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id,titulo,tipo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
+	}).
+		Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome").Omit("CreatedAt", "UpdatedAt", "DeletedAt") }).
+		Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id,nome,periodo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
 		}).
-			Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome").Omit("CreatedAt", "UpdatedAt", "DeletedAt") }).
-			Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB {
-				return db.Select("id,nome,periodo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
-			}).
-			Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo")
+		Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo")
+
+	if params != nil {
 		for key, value := range params {
 			if key == "email" {
-				//query = query.Preload("Disciplina.Usuario").Where("disciplinas.usuario.email = ?", value)
 				query = query.Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome,email").Where("email = ?", value) })
-				//Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
-
 			} else {
 				query = query.Where(key, value)
 			}
@@ -190,15 +188,16 @@ func (u *Solicitacao_Doc) FindAll(db *gorm.DB, params map[string]interface{}) (*
 			if key == "email" {
 				//query = query.Preload("Disciplina.Usuario").Where("disciplinas.usuario.email = ?", value)
 				query = query.Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome,email").Where("email = ?", value) })
-				//Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
-
+				query = query.Joins("JOIN disciplinas ON solicitacao_docs.disciplina_id = disciplinas.id").
+					Joins("JOIN usuarios ON disciplinas.usuario_id = usuarios.id").
+					Where("usuarios.email = ?", value).
+					Select("solicitacao_docs.*")
 			} else {
 				query = query.Where(key, value)
 			}
-
 		}
 	}
-
+	fmt.Println(query)
 	err = query.Omit("CreatedAt", "UpdatedAt", "DeletedAt").Find(&Solicitacao_Docs).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

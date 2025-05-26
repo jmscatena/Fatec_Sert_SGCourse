@@ -97,7 +97,7 @@ func (u *Usuario) FindAll(db *gorm.DB, params map[string]interface{}) (*[]Usuari
 			query = query.Where(key, value)
 		}
 	}
-	err = query.First(&result).Error
+	err = query.Find(&result).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("Usuario Inexistente")
@@ -108,7 +108,7 @@ func (u *Usuario) FindAll(db *gorm.DB, params map[string]interface{}) (*[]Usuari
 }
 
 func (u *Usuario) Delete(db *gorm.DB, ID uint) (int64, error) {
-	db = db.Debug().Where("id = ?", ID).Delete(&Usuario{})
+	db = db.Unscoped().Where("id = ?", ID).Delete(&Usuario{})
 	if db.Error != nil {
 		return 0, db.Error
 	}

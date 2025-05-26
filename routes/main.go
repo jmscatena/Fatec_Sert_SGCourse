@@ -76,8 +76,8 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 			})
 			userRoute.GET("/professors/", func(context *gin.Context) {
 				//colocar as configuracoes para os params q virao do frontend
-				params := map[string]interface{}{"coordenador": true, "professor": true, "ativo": true}
-				middleware.Get[administrativo.Usuario](context, &user, params, conn)
+				params := map[string]interface{}{"professor": true, "ativo": true}
+				middleware.FindAll[administrativo.Usuario](context, &user, params, conn)
 			})
 
 			userRoute.PATCH("/:id", func(context *gin.Context) {
@@ -199,8 +199,7 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.Get[curso.Solicitacao_Doc](context, &requisition, params, conn)
 			})
 			requisitionRoute.GET("/professor/", func(context *gin.Context) {
-				//ID := context.Param("email")
-				params := map[string]interface{}{"email": "jean.scatena@fatec.sp.gov.br", "ativo": true}
+				params := map[string]interface{}{"email": "jean.scatena@fatec.sp.gov.br"}
 				fmt.Println(params)
 				middleware.FindAll[curso.Solicitacao_Doc](context, &requisition, params, conn)
 			})
@@ -221,205 +220,53 @@ func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.Secre
 				middleware.GetAll[curso.Solicitacao_Doc](context, &reqs, conn)
 			})
 		}
+		deliveryRoute := main.Group("delivery", services.Authenticate(conn, token))
+		{
+			var delivery curso.Entrega_Doc
+			deliveryRoute.POST("/", func(context *gin.Context) {
+				var fileData struct {
+					FileName  string `json:"fileName"`
+					FileBytes []byte `json:"fileBytes"`
+				}
+				if err := context.ShouldBindJSON(&fileData); err != nil {
+					context.JSON(400, gin.H{"error": "Invalid file data"})
+					return
+				}
+				_, err := delivery.SaveFile(fileData.FileBytes, fileData.FileName)
+				if err != nil {
+					context.JSON(400, gin.H{"error": "Invalid file save"})
+					return
+				}
+				middleware.Add[curso.Entrega_Doc](context, &delivery, conn)
+			})
+			deliveryRoute.GET("/:id", func(context *gin.Context) {
+				ID := context.Param("id")
+				params := map[string]interface{}{"id": ID, "ativo": true}
+				middleware.Get[curso.Entrega_Doc](context, &delivery, params, conn)
+			})
+			deliveryRoute.GET("/professor/", func(context *gin.Context) {
+				params := map[string]interface{}{"email": "jean.scatena@fatec.sp.gov.br", "ativo": true}
+				fmt.Println(params)
+				middleware.FindAll[curso.Entrega_Doc](context, &delivery, params, conn)
+			})
+			deliveryRoute.PATCH("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Modify[curso.Entrega_Doc](context, &delivery, uint(ID), conn)
+			})
+			deliveryRoute.DELETE("/:id", func(context *gin.Context) {
+				ID, _ := strconv.ParseUint(context.Param("id"), 10, 64)
+				middleware.Erase[curso.Entrega_Doc](context, &delivery, uint(ID), conn)
+			})
+
+		}
+		deliveriesRoute := main.Group("deliveries", services.Authenticate(conn, token))
+		{
+			var deliveries curso.Entrega_Doc
+			deliveriesRoute.GET("/", func(context *gin.Context) {
+				middleware.GetAll[curso.Entrega_Doc](context, &deliveries, conn)
+			})
+		}
+
 	}
-
-	/*
-		matRoute := main.Group("materiais", services.Authenticate(conn, token))
-		{
-			var mat laboratorios2.Materiais
-			matRoute.POST("/", func(context *gin.Context) {
-				middleware.Add[laboratorios2.Materiais](context, &mat, conn)
-			})
-			matRoute.GET("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				condition := "Id=?"
-				middleware.Get[laboratorios2.Materiais](context, &mat, condition, ID.String(), conn)
-			})
-
-			matRoute.GET("/", func(context *gin.Context) {
-				middleware.GetAll[laboratorios2.Materiais](context, &mat, conn)
-			})
-			matRoute.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Modify[laboratorios2.Materiais](context, &mat, ID, conn)
-			})
-			matRoute.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Erase[laboratorios2.Materiais](context, &mat, ID, conn)
-			})
-
-
-				mat.GET("/admin/", func(context *gin.Context) {
-					//colocar as configuracoes para os params q virao do frontend
-					params := "admin=?;ativo=?"
-					controllers.GetBy[administrativo.Usuario](context, &obj, params, false, true)
-				})
-
-
-		}
-		lab := main.Group("laboratorios", services.Authenticate(conn, token))
-		{
-			var obj laboratorios2.Laboratorios
-			lab.POST("/", func(context *gin.Context) {
-				middleware.Add[laboratorios2.Laboratorios](context, &obj, conn)
-			})
-			lab.GET("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				condition := "Id=?"
-				middleware.Get[laboratorios2.Laboratorios](context, &obj, condition, ID.String(), conn)
-			})
-
-			lab.GET("/", func(context *gin.Context) {
-				middleware.GetAll[laboratorios2.Laboratorios](context, &obj, conn)
-			})
-			lab.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Modify[laboratorios2.Laboratorios](context, &obj, ID, conn)
-			})
-			lab.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Erase[laboratorios2.Laboratorios](context, &obj, ID, conn)
-			})
-		}
-		res := main.Group("reservas", services.Authenticate(conn, token))
-		{
-			var obj laboratorios2.Reservas
-			res.POST("/", func(context *gin.Context) {
-				middleware.Add[laboratorios2.Reservas](context, &obj, conn)
-			})
-			res.GET("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				condition := "Id=?"
-				middleware.Get[laboratorios2.Reservas](context, &obj, condition, ID.String(), conn)
-			})
-
-			res.GET("/", func(context *gin.Context) {
-				middleware.GetAll[laboratorios2.Reservas](context, &obj, conn)
-			})
-			res.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Modify[laboratorios2.Reservas](context, &obj, ID, conn)
-			})
-			res.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Erase[laboratorios2.Reservas](context, &obj, ID, conn)
-			})
-		}
-		ges := main.Group("gestao", services.Authenticate(conn, token))
-		{
-			var obj laboratorios2.GestaoMateriais
-			ges.POST("/", func(context *gin.Context) {
-				middleware.Add[laboratorios2.GestaoMateriais](context, &obj, conn)
-			})
-			ges.GET("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				condition := "Id=?"
-				middleware.Get[laboratorios2.GestaoMateriais](context, &obj, condition, ID.String(), conn)
-			})
-
-			ges.GET("/", func(context *gin.Context) {
-				middleware.GetAll[laboratorios2.GestaoMateriais](context, &obj, conn)
-			})
-			ges.PATCH("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Modify[laboratorios2.GestaoMateriais](context, &obj, ID, conn)
-			})
-			ges.DELETE("/:id", func(context *gin.Context) {
-				ID, _ := uID.Parse(context.Param("id"))
-				middleware.Erase[laboratorios2.GestaoMateriais](context, &obj, ID, conn)
-			})
-		}
-
-			inst := main.Group("instituicao")
-			{
-				var obj models.Instituicao
-				inst.POST("/", func(context *gin.Context) {
-					controllers.Add[models.Instituicao](context, &obj)
-				})
-				inst.GET("/", func(context *gin.Context) {
-					controllers.GetAll[models.Instituicao](context, &obj)
-				})
-				inst.GET("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Get[models.Instituicao](context, &obj, uID)
-				})
-				inst.PATCH("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Modify[models.Instituicao](context, &obj, uID)
-				})
-				inst.DELETE("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Erase[models.Instituicao](context, &obj, uID)
-				})
-			}
-			event := main.Group("evento")
-			{
-				var obj models.Evento
-				event.POST("/", func(context *gin.Context) {
-					controllers.Add[models.Evento](context, &obj)
-				})
-				event.GET("/", func(context *gin.Context) {
-					controllers.GetAll[models.Evento](context, &obj)
-				})
-				event.GET("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Get[models.Evento](context, &obj, uID)
-				})
-				event.PATCH("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Modify[models.Evento](context, &obj, uID)
-				})
-				event.DELETE("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Erase[models.Evento](context, &obj, uID)
-				})
-			}
-			cert := main.Group("cert")
-			{
-				var obj models.Certificado
-				cert.POST("/", func(context *gin.Context) {
-					controllers.Add[models.Certificado](context, &obj)
-				})
-				cert.GET("/", func(context *gin.Context) {
-					controllers.GetAll[models.Certificado](context, &obj)
-				})
-				cert.GET("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Get[models.Certificado](context, &obj, uID)
-				})
-				cert.PATCH("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Modify[models.Certificado](context, &obj, uID)
-				})
-				cert.DELETE("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Erase[models.Certificado](context, &obj, uID)
-				})
-			}
-			certval := main.Group("valida")
-			{
-				var obj models.CertVal
-				certval.POST("/", func(context *gin.Context) {
-					controllers.Add[models.CertVal](context, &obj)
-				})
-				certval.GET("/", func(context *gin.Context) {
-					controllers.GetAll[models.CertVal](context, &obj)
-				})
-				certval.GET("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Get[models.CertVal](context, &obj, uID)
-				})
-				certval.PATCH("/", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Modify[models.CertVal](context, &obj, uID)
-				})
-				certval.DELETE("/:id", func(context *gin.Context) {
-					ID, _ := uID.Parse(context.Param("id"))
-					controllers.Erase[models.CertVal](context, &obj, uID)
-				})
-			}
-	*/
-	//main.POST("login", controllers.Login)
-
 	return router
 }
