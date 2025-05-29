@@ -5,21 +5,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type Periodo string
-
-const (
-	matutino   Periodo = "matutino"
-	vespertino Periodo = "vespertino"
-	noturno    Periodo = "noturno"
-)
-
 type Curso struct {
 	// Esta faltando os materiais
 	gorm.Model
-	ID      uint    `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
-	Nome    string  `gorm:"size:255;not null;unique" json:"nome"`
-	Periodo Periodo `json:"periodo" validate:"required"`
-	Ativo   bool    `gorm:"default:True;" json:"ativo"`
+	ID      uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
+	Nome    string `gorm:"size:255;not null;unique" json:"nome"`
+	Periodo string `json:"periodo" validate:"required"`
+	Ativo   bool   `gorm:"default:True;" json:"ativo"`
 }
 
 func (p *Curso) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Curso, error) {
@@ -35,7 +27,7 @@ func (p *Curso) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
-	err := db.Debug().Omit("ID").Create(&p).Error
+	err := db.Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
 	}
@@ -43,7 +35,7 @@ func (p *Curso) Create(db *gorm.DB) (uint, error) {
 }
 
 func (p *Curso) Update(db *gorm.DB, id uint) (*Curso, error) {
-	db = db.Debug().Model(Curso{}).Where("id = ?", id).Updates(Curso{
+	db = db.Model(Curso{}).Where("id = ?", id).Updates(Curso{
 		Nome:    p.Nome,
 		Periodo: p.Periodo,
 		Ativo:   p.Ativo,
@@ -56,7 +48,7 @@ func (p *Curso) Update(db *gorm.DB, id uint) (*Curso, error) {
 
 func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 	Cursos := []Curso{}
-	err := db.Debug().Model(&Curso{}).Limit(100).Find(&Cursos).Error
+	err := db.Model(&Curso{}).Limit(100).Find(&Cursos).Error
 	//result := db.Find(&Cursos)
 	if err != nil {
 		return nil, err
@@ -66,7 +58,7 @@ func (p *Curso) List(db *gorm.DB) (*[]Curso, error) {
 
 /*
 	func (u *Curso) Find(db *gorm.DB, param string, ID uint) (*Curso, error) {
-		err := db.Debug().Model(Curso{}).Where(param, ID).Take(&u).Error
+		err := db.Model(Curso{}).Where(param, ID).Take(&u).Error
 		if err != nil {
 			return &Curso{}, err
 		}
@@ -96,7 +88,7 @@ func (u *Curso) Find(db *gorm.DB, params map[string]interface{}) (*Curso, error)
 
 /*
 	func (p *Curso) Find(db *gorm.DB, id uint) (*Curso, error) {
-		err := db.Debug().Model(&Curso{}).Where("id = ?", id).Take(&p).Error
+		err := db.Model(&Curso{}).Where("id = ?", id).Take(&p).Error
 		if err != nil {
 			return &Curso{}, err
 		}

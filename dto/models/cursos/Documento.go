@@ -5,19 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type Tipo string
-
-const (
-	pdf Tipo = "pdf"
-	img Tipo = "img"
-	doc Tipo = "doc"
-)
-
 type Documento struct {
 	gorm.Model
 	ID     uint   `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Titulo string `gorm:"size:255;not null;" json:"titulo"`
-	Tipo   Tipo   `json:"tipo" validate:"required"`
+	Tipo   string `json:"tipo" validate:"required"`
 	Ativo  bool   `gorm:"default:True;" json:"ativo"`
 }
 
@@ -29,7 +21,7 @@ func (p *Documento) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
-	err := db.Debug().Omit("ID").Create(&p).Error
+	err := db.Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
 	}
@@ -37,7 +29,7 @@ func (p *Documento) Create(db *gorm.DB) (uint, error) {
 }
 
 func (p *Documento) Update(db *gorm.DB, id uint) (*Documento, error) {
-	db = db.Debug().Model(Documento{}).Where("id = ?", id).Updates(Documento{
+	db = db.Model(Documento{}).Where("id = ?", id).Updates(Documento{
 		Titulo: p.Titulo,
 		Tipo:   p.Tipo,
 		Ativo:  p.Ativo,
@@ -51,7 +43,7 @@ func (p *Documento) Update(db *gorm.DB, id uint) (*Documento, error) {
 
 func (p *Documento) List(db *gorm.DB) (*[]Documento, error) {
 	Documentos := []Documento{}
-	err := db.Debug().Model(&Documento{}).Limit(100).Find(&Documentos).Error
+	err := db.Model(&Documento{}).Limit(100).Find(&Documentos).Error
 	//result := db.Find(&Documentos)
 	if err != nil {
 		return nil, err

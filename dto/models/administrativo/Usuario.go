@@ -2,7 +2,6 @@ package administrativo
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"html"
@@ -28,7 +27,7 @@ func (u *Usuario) Create(db *gorm.DB) (uint, error) {
 		return 0, verr
 	}
 	u.Prepare()
-	err := db.Debug().Omit("ID").Create(&u).Error
+	err := db.Omit("ID").Create(&u).Error
 	if err != nil {
 		return 0, err
 	}
@@ -49,7 +48,7 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 	if db.Error != nil {
 		return &Usuario{}, db.Error
 	}
-	err := db.Debug().
+	err := db.
 		Model(&Usuario{}).Where("id = ?", ID).Take(&u).Error
 	if err != nil {
 		return &Usuario{}, err
@@ -59,11 +58,10 @@ func (u *Usuario) Update(db *gorm.DB, ID uint) (*Usuario, error) {
 
 func (u *Usuario) List(db *gorm.DB) (*[]Usuario, error) {
 	Usuarios := []Usuario{}
-	err := db.Debug().
+	err := db.
 		Model(&Usuario{}).
 		Select("id, nome, email, ativo, diretor, coordenador, professor, created_at, updated_at").
 		Find(&Usuarios).Error
-	fmt.Println(Usuarios)
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +79,6 @@ func (u *Usuario) Find(db *gorm.DB, params map[string]interface{}) (*Usuario, er
 	}
 	err = query.First(result).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("Usuario Inexistente")
-		}
 		return nil, err
 	}
 	return result, nil

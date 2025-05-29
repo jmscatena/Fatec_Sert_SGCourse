@@ -2,14 +2,16 @@ package cursos
 
 import (
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
+	"io"
+	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
-const SharedFolderPath = "/shared/uploads/"
+const SharedFolderPath = "./static/requests/"
 
 type Entrega_Doc struct {
 	gorm.Model
@@ -17,55 +19,98 @@ type Entrega_Doc struct {
 	ID            uint            `gorm:"unique;primaryKey;autoIncrement" json:"ID"`
 	Solicitacao   Solicitacao_Doc `json:"solicitacao"`
 	Arquivo       string          `gorm:"type:varchar(255)" json:"arq"`
-	FileName      string          `gorm:"type:varchar(255)" json:"fileName"`
 }
 
 func (p *Entrega_Doc) Validate() error {
 	if p.SolicitacaoID == 0 {
 		return errors.New("obrigatório: SolicitacaoID")
 	}
-	if p.FileName == "" {
+	if p.Arquivo == "" {
 		return errors.New("obrigatório: Nome do arquivo")
 	}
 	return nil
 }
-func (p *Entrega_Doc) Prepare(db *gorm.DB) (err error) {
+func (p *Entrega_Doc) Prepare() (err error) {
 	p.Solicitacao = p.Solicitacao
 	p.Arquivo = p.Arquivo
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 	return
 }
-func (p *Entrega_Doc) SaveFile(fileBytes []byte, originalName string) (string, error) {
-	ext := filepath.Ext(originalName)
-	fileName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-	filePath := filepath.Join(SharedFolderPath, fileName)
+func (p *Entrega_Doc) SaveFile(fileHeader *multipart.FileHeader, fileName string) (string, error) {
 
-	err := os.MkdirAll(SharedFolderPath, 0755)
+	fullName := fileHeader.Filename
+	// 1. Check if the file extension is allowed
+	ext := filepath.Ext(fullName)
+	allowedExt := map[string]bool{
+		".pdf":  true,
+		".jpg":  true,
+		".png":  true,
+		".docx": true,
+		".doc":  true,
+		".xls":  true,
+		".xlsx": true,
+		".ppt":  true,
+		".pptx": true,
+	}
+	if !allowedExt[strings.ToLower(ext)] {
+		return "", errors.New("arquivo: extensão não permitida, use apenas PDF, JPG, PNG, DOC, DOCX, PPT, PPTX, XLS, XLSX")
+	}
+	fullName = fileName + ext
+	// 2. Open the uploaded file (Gin provides an *os.File-like interface)
+	uploadedFile, err := fileHeader.Open()
 	if err != nil {
-		return "", err
+		return "", errors.New("arquivo: erro ao abrir o arquivo")
+	}
+	defer uploadedFile.Close() // Ensure the file is closed
+
+	// 3. Define the upload directory and create it if it doesn't exist
+	uploadDir := "../static/requests/files" // A different directory to distinguish
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		if err = os.Mkdir(uploadDir, 0755); err != nil {
+			return "", errors.New("diretorio: falha ao criar diretorio")
+		}
 	}
 
-	err = os.WriteFile(filePath, fileBytes, 0644)
-	if err != nil {
-		return "", err
-	}
+	// Use filepath.Base to prevent directory traversal attacks
+	filePath := filepath.Join(uploadDir, filepath.Base(fullName))
 
-	return fileName, nil
+	// 5. Create the destination file on disk
+	dstFile, err := os.Create(filePath)
+	if err != nil {
+		return "", errors.New("erro: ao criar arquivo")
+	}
+	defer dstFile.Close() // Ensure the destination file is closed
+
+	// 6. Copy the content from the uploaded file to the destination file
+	// Use io.Copy to efficiently copy large files without loading entirely into memory
+	_, err = io.Copy(dstFile, uploadedFile)
+	if err != nil {
+		return "", errors.New("erro: ao salvar arquivo")
+	}
+	return dstFile.Name(), nil
 }
 func (p *Entrega_Doc) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
-	p.Prepare(db)
-	err := db.Debug().Omit("ID").Create(&p).Error
+	p.Prepare()
+	err := db.Omit("ID").Create(&p).Error
+	if err != nil {
+		return 0, err
+	}
+	err = db.Model(&Solicitacao_Doc{}).Where("id = ?", p.SolicitacaoID).Updates(
+		Solicitacao_Doc{
+			Ativo:   true,
+			Entrega: true,
+		}).Error
 	if err != nil {
 		return 0, err
 	}
 	return p.ID, nil
 }
 func (p *Entrega_Doc) Update(db *gorm.DB, id uint) (*Entrega_Doc, error) {
-	p.Prepare(db)
+	p.Prepare()
 	db = db.Model(Entrega_Doc{}).Where("id = ?", id).Updates(
 		Entrega_Doc{
 			Solicitacao: p.Solicitacao,
@@ -78,10 +123,10 @@ func (p *Entrega_Doc) Update(db *gorm.DB, id uint) (*Entrega_Doc, error) {
 }
 func (p *Entrega_Doc) List(db *gorm.DB) (*[]Entrega_Doc, error) {
 	Entrega_Docs := []Entrega_Doc{}
-	//err := db.Debug().Model(&Entrega_Doc{}).Limit(100).Find(&Entrega_Docs).Error
+	//err := db.Model(&Entrega_Doc{}).Limit(100).Find(&Entrega_Docs).Error
 	//result := db.Find(&Entrega_Docs)
 	//err := db.Model(&Entrega_Doc{}).Preload("Materiais").Find(&Entrega_Docs).Error
-	err := db.Debug().Preload("Curso").Preload("Solicitacao").Find(&Entrega_Docs).Error
+	err := db.Preload("Curso").Preload("Solicitacao").Find(&Entrega_Docs).Error
 
 	if err != nil {
 		return nil, err
@@ -94,13 +139,6 @@ func (u *Entrega_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Entrega
 	query = query.
 		Preload("Solicitacao", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id,documento,disciplina,entrega,prazo,ativo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
-		}).
-		Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome").Omit("CreatedAt", "UpdatedAt", "DeletedAt") }).
-		Preload("Disciplina.Curso", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id,nome,periodo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
-		}).
-		Preload("Documento", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id,titulo,tipo").Omit("CreatedAt", "UpdatedAt", "DeletedAt")
 		})
 
 	if params != nil {
@@ -122,7 +160,6 @@ func (u *Entrega_Doc) Find(db *gorm.DB, params map[string]interface{}) (*Entrega
 	}
 	return u, nil
 }
-
 func (p *Entrega_Doc) FindAll(db *gorm.DB, param map[string]interface{}) (*[]Entrega_Doc, error) {
 	var err error
 	var Entrega_Docs []Entrega_Doc

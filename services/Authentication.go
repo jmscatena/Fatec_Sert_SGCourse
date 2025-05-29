@@ -25,7 +25,7 @@ func Signup(conn config.Connection, token config.SecretsToken) gin.HandlerFunc {
 			existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"diretor": true, "ativo": true}, conn)
 			if existUser == nil {
 				existUser, _ = Get[administrativo.Usuario](&user, map[string]interface{}{"coordenador": true, "ativo": true}, conn)
-				fmt.Println(existUser)
+
 				if existUser != nil {
 					c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})
 					c.Abort()
@@ -77,7 +77,7 @@ func SignupStatus(conn config.Connection) gin.HandlerFunc {
 		existUser, _ := Get[administrativo.Usuario](&user, map[string]interface{}{"diretor": true, "ativo": true}, conn)
 		if existUser == nil {
 			existUser, _ = Get[administrativo.Usuario](&user, map[string]interface{}{"coordenador": true, "ativo": true}, conn)
-			fmt.Println(existUser)
+
 			//Verificar a senha com o user
 			if existUser == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "This Action is disable !!!"})

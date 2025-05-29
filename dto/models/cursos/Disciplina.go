@@ -31,7 +31,7 @@ func (p *Disciplina) Validate() error {
 	}
 	return nil
 }
-func (p *Disciplina) Prepare(db *gorm.DB) (err error) {
+func (p *Disciplina) Prepare() (err error) {
 	p.Nome = html.EscapeString(strings.TrimSpace(p.Nome))
 	p.Semestre = int(p.Semestre)
 	p.CursoID = uint(p.CursoID)
@@ -45,8 +45,8 @@ func (p *Disciplina) Create(db *gorm.DB) (uint, error) {
 	if verr := p.Validate(); verr != nil {
 		return 0, verr
 	}
-	p.Prepare(db)
-	err := db.Debug().Omit("ID").Create(&p).Error
+	p.Prepare()
+	err := db.Omit("ID").Create(&p).Error
 	if err != nil {
 		return 0, err
 	}
@@ -54,8 +54,8 @@ func (p *Disciplina) Create(db *gorm.DB) (uint, error) {
 }
 
 func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
-	p.Prepare(db)
-	//err := db.Debug().Model(&Disciplina{}).Where("id = ?", id).Take(&Disciplina{}).UpdateColumns(
+	p.Prepare()
+	//err := db.Model(&Disciplina{}).Where("id = ?", id).Take(&Disciplina{}).UpdateColumns(
 	//	map[string]interface{}
 	db = db.Model(Disciplina{}).Where("id = ?", id).Updates(
 		Disciplina{
@@ -72,8 +72,8 @@ func (p *Disciplina) Update(db *gorm.DB, id uint) (*Disciplina, error) {
 
 func (p *Disciplina) List(db *gorm.DB) (*[]Disciplina, error) {
 	Disciplinas := []Disciplina{}
-	//err := db.Debug().Model(&Disciplina{}).Limit(100).Find(&Disciplinas).Error
-	err := db.Debug().
+	//err := db.Model(&Disciplina{}).Limit(100).Find(&Disciplinas).Error
+	err := db.
 		Preload("Curso").
 		Preload("Usuario", func(db *gorm.DB) *gorm.DB {
 			return db.Select("id, nome").Omit("email", "professor", "coordenador", "diretor")

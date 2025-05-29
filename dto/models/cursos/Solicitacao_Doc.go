@@ -2,7 +2,6 @@ package cursos
 
 import (
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -69,7 +68,7 @@ func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 	}
 	disciplinas := []Disciplina{}
 	var err error
-	query := db.Debug().Model(&Disciplina{})
+	query := db.Model(&Disciplina{})
 
 	if p.CursoID == 0 {
 		if p.SemestreID > 0 {
@@ -90,12 +89,10 @@ func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	fmt.Println(disciplinas)
-
 	for _, disciplina := range disciplinas {
 		p.DisciplinaID = disciplina.ID
 		newSolicitation := *p
-		err := db.Debug().Model(&Solicitacao_Doc{}).Omit("ID").Create(&newSolicitation).Error
+		err := db.Model(&Solicitacao_Doc{}).Omit("ID").Create(&newSolicitation).Error
 		if err != nil {
 			return 0, err
 		}
@@ -104,7 +101,7 @@ func (p *Solicitacao_Doc) Create(db *gorm.DB) (uint, error) {
 }
 
 func (p *Solicitacao_Doc) Update(db *gorm.DB, ID uint) (*Solicitacao_Doc, error) {
-	db = db.Debug().Model(Solicitacao_Doc{}).Where("id = ?", ID).Updates(Solicitacao_Doc{
+	db = db.Model(Solicitacao_Doc{}).Where("id = ?", ID).Updates(Solicitacao_Doc{
 		Disciplina: p.Disciplina,
 		Documento:  p.Documento,
 		Entrega:    p.Entrega,
@@ -120,8 +117,7 @@ func (p *Solicitacao_Doc) Update(db *gorm.DB, ID uint) (*Solicitacao_Doc, error)
 func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 	Solicitacao_Docs := []Solicitacao_Doc{}
 	//[]Solicitacao_Doc{}
-	err := db.Debug().
-		Model(&Solicitacao_Doc{}).
+	err := db.Model(&Solicitacao_Doc{}).
 		Limit(100).
 		Preload("Documento", func(db *gorm.DB) *gorm.DB { return db.Select("id,titulo,tipo") }).
 		Preload("Disciplina.Usuario", func(db *gorm.DB) *gorm.DB { return db.Select("id,nome") }).
@@ -129,7 +125,6 @@ func (p *Solicitacao_Doc) List(db *gorm.DB) (*[]Solicitacao_Doc, error) {
 		Select("id, documento_id, disciplina_id, curso_id, semestre_id, entrega, prazo, ativo").
 		Omit("CreatedAt", "UpdatedAt", "DeletedAt").
 		Find(&Solicitacao_Docs).Error
-	fmt.Println(Solicitacao_Docs[0])
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +192,6 @@ func (u *Solicitacao_Doc) FindAll(db *gorm.DB, params map[string]interface{}) (*
 			}
 		}
 	}
-	fmt.Println(query)
 	err = query.Omit("CreatedAt", "UpdatedAt", "DeletedAt").Find(&Solicitacao_Docs).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
