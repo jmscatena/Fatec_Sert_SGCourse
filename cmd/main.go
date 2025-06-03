@@ -27,7 +27,7 @@ func main() {
 	token := (&config.SecretsToken{}).GenerateSecret()
 
 	server := config.Server{}
-	server.NewServer("8000")
+	server.NewServer("9000")
 	router := routes.ConfigRoutes(server.Server, dbConn, *token)
 	log.Fatal(router.Run(":" + server.Port))
 
