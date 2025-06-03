@@ -14,7 +14,6 @@ func RunMigrate(db *gorm.DB) {
 		&curso.Disciplina{},
 		&curso.Documento{},
 		&curso.Solicitacao_Doc{},
-		&curso.Entrega_Doc{},
 	)
 	if err != nil {
 		fmt.Println("Migrating database erro:", err)
