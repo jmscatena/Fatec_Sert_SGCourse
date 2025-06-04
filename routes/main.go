@@ -12,7 +12,10 @@ import (
 )
 
 func ConfigRoutes(router *gin.Engine, conn config.Connection, token config.SecretsToken) *gin.Engine {
-
+	err := router.SetTrustedProxies([]string{"200.144.13.38/8", "127.0.0.1/24"})
+	if err != nil {
+		return nil
+	}
 	main := router.Group("/")
 	{
 		main.GET("/", services.Authenticate(conn, token), func(context *gin.Context) {
